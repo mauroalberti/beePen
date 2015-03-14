@@ -47,37 +47,33 @@ class beePen_QWidget( QWidget ):
   
     def setup_annotation1_tab( self ):  
 
-        profile_widget = QWidget() 
-        profile_layout = QVBoxLayout()
+        annotation1_widget = QWidget() 
+        annotation1_layout = QVBoxLayout()
  
-        profile_toolbox = QToolBox()        
-
-
+        annotation1_toolbox = QToolBox()   
                  
-        # widget final setup 
+        # .... some code 
                        
-        profile_layout.addWidget(profile_toolbox)
-        profile_widget.setLayout(profile_layout) 
+        annotation1_layout.addWidget(annotation1_toolbox)
+        annotation1_widget.setLayout(annotation1_layout) 
         
-        return profile_widget     
+        return annotation1_widget     
         
 
     def setup_annotation2_tab( self ):
         
-        section_project_QWidget = QWidget()  
-        section_project_layout = QVBoxLayout() 
+        annotation2_project_QWidget = QWidget()  
+        annotation2_project_layout = QVBoxLayout() 
 
         project_toolbox = QToolBox()
-        
-        ### Point project toolbox
+
+        # .... some code 
                 
-        # widget final setup
-                
-        section_project_layout.addWidget( project_toolbox ) 
+        annotation2_project_layout.addWidget( project_toolbox ) 
            
-        section_project_QWidget.setLayout( section_project_layout )
+        annotation2_project_QWidget.setLayout( annotation2_project_layout )
         
-        return section_project_QWidget
+        return annotation2_project_QWidget
 
 
            
@@ -88,14 +84,10 @@ class beePen_QWidget( QWidget ):
         
         htmlText = """
         <h3>beePen</h3>
-        To create
+        Still to create
         <br />
         <br />
         <br />
-        
-        
-        
-        
         """
         
         aboutQTextBrowser = QTextBrowser( about_widget )        
