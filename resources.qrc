@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/beePen" >
+        <file>bee.png</file>
+    </qresource>
+</RCC>

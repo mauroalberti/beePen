@@ -1,0 +1,30 @@
+[general]
+name=beePen
+description=Allows to draw freehand lines in a layer
+category=Vector 
+version=0.0.1
+experimental=True
+qgisMinimumVersion=2.0
+author=Mauro DeDonatis, Mauro Alberti, Alessio Salvi
+email=mauro.dedonatis@uniurb.it
+icon=./icon.png
+
+; end of mandatory metadata
+
+; start of optional metadata
+changelog=
+  0.0.1 : - initial test version	
+
+; tags are in comma separated value format, spaces are allowed
+tags = annotation, field work
+
+; these metadata can be empty
+; in a future version of the web application it will
+; be probably possible to create a project on redmine
+; if they are not filled
+homepage=https://github.com/mauroalberti/beePen
+tracker=https://github.com/mauroalberti/beePen/issues
+repository=https://github.com/mauroalberti/beePen
+
+; deprecated flag (applies to the whole plugin and not only to the uploaded version)
+deprecated=False
