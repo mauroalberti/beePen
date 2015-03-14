@@ -22,10 +22,11 @@ class beePen_gui( object ):
 
     def initGui(self):
         
-        self.beePen_QAction = QAction(QIcon(":/plugins/beePen/bee.png"), "beePen", self.interface.mainWindow())
+        self.beePen_QAction = QAction(QIcon(":/plugins/beePen/icon.png"), "beePen", self.interface.mainWindow())
         self.beePen_QAction.setWhatsThis( "Graphic annotations for field work" ) 
         self.beePen_QAction.triggered.connect( self.open_beePen )
         self.interface.addPluginToMenu("beePen", self.beePen_QAction)
+        self.interface.digitizeToolBar().addAction(self.beePen_QAction)
 
 
     def unload(self):

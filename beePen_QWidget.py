@@ -35,8 +35,7 @@ class beePen_QWidget( QWidget ):
 
         self.dialog_layout = QVBoxLayout()
         self.main_widget = QTabWidget()        
-        self.main_widget.addTab( self.setup_annotation1_tab(), "Annotation 1" )         
-        self.main_widget.addTab( self.setup_annotation2_tab(), "Annotation 2" )
+        self.main_widget.addTab( self.setup_annotation_tab(), "Annotation" )         
         self.main_widget.addTab( self.setup_about_tab(), "Help/About" )
         
         self.dialog_layout.addWidget(self.main_widget)                             
@@ -45,36 +44,19 @@ class beePen_QWidget( QWidget ):
         self.setWindowTitle(_plugin_name_)        
                 
   
-    def setup_annotation1_tab( self ):  
+    def setup_annotation_tab( self ):  
 
-        annotation1_widget = QWidget() 
-        annotation1_layout = QVBoxLayout()
+        annotation_widget = QWidget() 
+        annotation_layout = QVBoxLayout()
  
-        annotation1_toolbox = QToolBox()   
+        annotation_toolbox = QToolBox()   
                  
         # .... some code 
                        
-        annotation1_layout.addWidget(annotation1_toolbox)
-        annotation1_widget.setLayout(annotation1_layout) 
+        annotation_layout.addWidget(annotation_toolbox)
+        annotation_widget.setLayout(annotation_layout) 
         
-        return annotation1_widget     
-        
-
-    def setup_annotation2_tab( self ):
-        
-        annotation2_project_QWidget = QWidget()  
-        annotation2_project_layout = QVBoxLayout() 
-
-        project_toolbox = QToolBox()
-
-        # .... some code 
-                
-        annotation2_project_layout.addWidget( project_toolbox ) 
-           
-        annotation2_project_QWidget.setLayout( annotation2_project_layout )
-        
-        return annotation2_project_QWidget
-
+        return annotation_widget     
 
            
     def setup_about_tab(self):
