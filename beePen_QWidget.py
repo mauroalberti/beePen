@@ -8,18 +8,133 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 
+from geosurf.qgs_tools import loaded_line_layers
+
+
 
 _plugin_name_ = "beePen"
 
         
 class beePen_QWidget( QWidget ):
 
+
     def __init__( self, canvas ):
 
         super( beePen_QWidget, self ).__init__() 
         self.mapcanvas = canvas   
         self.setup_gui()
+          
+                      
+    def setup_gui( self ): 
 
+        self.dialog_layout = QHBoxLayout()        
+
+        # Annotation layer widgets
+        
+        layer_QGroupBox = QGroupBox(self)
+        layer_QGroupBox.setTitle( 'Annotation layer')        
+        layer_layout = QHBoxLayout()
+        
+        # create new annotation layer button
+        create_new_QPushButton = QPushButton("Create new")        
+        layer_layout.addWidget( create_new_QPushButton)
+        
+        # use existing layer
+        layer_layout.addWidget( QLabel("Use"))        
+        use_layer_QComboBox = QComboBox()  
+        layer_layout.addWidget( use_layer_QComboBox)          
+
+        self.current_line_layers = loaded_line_layers()  
+        self.update_layer_comboBox( use_layer_QComboBox, self.current_line_layers )        
+                
+        layer_QGroupBox.setLayout( layer_layout )
+        self.dialog_layout.addWidget( layer_QGroupBox )        
+        
+        
+        # Pen widgets
+        
+        pen_QGroupBox = QGroupBox(self)
+        pen_QGroupBox.setTitle( 'Pen')        
+        pen_layout = QHBoxLayout()
+        
+        # pen width
+        pen_layout.addWidget( QLabel("Width"))        
+        pen_width_QComboBox = QComboBox()  
+        pen_width_QComboBox.insertItems(0, ["1","2","3","4","5"])      
+        pen_layout.addWidget( pen_width_QComboBox)
+
+        # transparency
+        pen_layout.addWidget( QLabel("Transp."))        
+        transparency_QComboBox = QComboBox() 
+        transparency_QComboBox.insertItems(0, ["0%","25%","50%","75%","100%"])        
+        pen_layout.addWidget( transparency_QComboBox)
+        
+        # pen color
+        pen_layout.addWidget( QLabel("Color"))        
+        pen_color_QComboBox = QComboBox() 
+        pen_color_QComboBox.insertItems(0, ["red","blue","yellow","green","orange","violet","pink"])         
+        pen_layout.addWidget( pen_color_QComboBox)
+        
+        pen_QGroupBox.setLayout( pen_layout )
+        self.dialog_layout.addWidget( pen_QGroupBox )           
+        
+
+        # Draw widgets
+
+        draw_QGroupBox = QGroupBox(self)
+        draw_QGroupBox.setTitle( 'Draw')        
+        draw_layout = QHBoxLayout()
+        
+        # start drawing
+        start_drawing_QPushButton = QPushButton("Start")        
+        draw_layout.addWidget( start_drawing_QPushButton)
+
+        # end drawing
+        end_drawing_QPushButton = QPushButton("End")        
+        draw_layout.addWidget( end_drawing_QPushButton)
+        
+        draw_QGroupBox.setLayout( draw_layout )
+        self.dialog_layout.addWidget( draw_QGroupBox )  
+        
+                
+        # Undo widgets
+
+        undo_QGroupBox = QGroupBox(self)
+        undo_QGroupBox.setTitle( 'Delete')        
+        undo_layout = QHBoxLayout()
+        
+        # clear last button
+        clear_last_QPushButton = QPushButton("Last")        
+        undo_layout.addWidget( clear_last_QPushButton)
+                
+        # clear all button
+        clear_all_QPushButton = QPushButton("All")        
+        undo_layout.addWidget( clear_all_QPushButton)
+        
+        # delete tool
+        delete_tool_QPushButton = QPushButton("Select")        
+        undo_layout.addWidget( delete_tool_QPushButton)
+                            
+        undo_QGroupBox.setLayout( undo_layout )
+        self.dialog_layout.addWidget( undo_QGroupBox )  
+        
+        
+        # final settings
+                                                           
+        self.setLayout(self.dialog_layout)            
+        self.adjustSize()               
+        self.setWindowTitle(_plugin_name_)        
+                
+
+
+    def update_layer_comboBox( self, combobox, layer_list ):
+    
+        combobox.clear()
+        if len( layer_list ) == 0:
+            return
+        combobox.addItems( [ layer.name() for layer in layer_list ] ) 
+        
+        
 
     def info(self, msg):
         
@@ -29,57 +144,7 @@ class beePen_QWidget( QWidget ):
     def warn( self, msg):
     
         QMessageBox.warning( self,  _plugin_name_, msg )
-          
-                      
-    def setup_gui( self ): 
-
-        self.dialog_layout = QVBoxLayout()
-        self.main_widget = QTabWidget()        
-        self.main_widget.addTab( self.setup_annotation_tab(), "Annotation" )         
-        self.main_widget.addTab( self.setup_about_tab(), "Help/About" )
         
-        self.dialog_layout.addWidget(self.main_widget)                             
-        self.setLayout(self.dialog_layout)            
-        self.adjustSize()               
-        self.setWindowTitle(_plugin_name_)        
-                
-  
-    def setup_annotation_tab( self ):  
-
-        annotation_widget = QWidget() 
-        annotation_layout = QVBoxLayout()
- 
-        annotation_toolbox = QToolBox()   
-                 
-        # .... some code 
-                       
-        annotation_layout.addWidget(annotation_toolbox)
-        annotation_widget.setLayout(annotation_layout) 
         
-        return annotation_widget     
-
-           
-    def setup_about_tab(self):
-        
-        about_widget = QWidget()  
-        about_layout = QVBoxLayout( )
-        
-        htmlText = """
-        <h3>beePen</h3>
-        Still to create
-        <br />
-        <br />
-        <br />
-        """
-        
-        aboutQTextBrowser = QTextBrowser( about_widget )        
-        aboutQTextBrowser.insertHtml( htmlText )
-         
-        about_layout.addWidget( aboutQTextBrowser )  
-        about_widget.setLayout(about_layout) 
-        
-        return about_widget
-
-
 
 

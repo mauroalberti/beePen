@@ -38,10 +38,10 @@ class beePen_gui( object ):
 
         beePen_DockWidget = QDockWidget( 'beePen', self.interface.mainWindow() )        
         beePen_DockWidget.setAttribute(Qt.WA_DeleteOnClose)
-        beePen_DockWidget.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )        
+        beePen_DockWidget.setAllowedAreas( Qt.BottomDockWidgetArea | Qt.TopDockWidgetArea )        
         self.beePen_QWidget = beePen_QWidget( self.canvas )        
         beePen_DockWidget.setWidget( self.beePen_QWidget )      
-        self.interface.addDockWidget( Qt.RightDockWidgetArea, beePen_DockWidget )
+        self.interface.addDockWidget( Qt.BottomDockWidgetArea, beePen_DockWidget )
 
 
 
