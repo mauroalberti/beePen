@@ -14,6 +14,17 @@ from qgis.gui import *
 from .errors import VectorIOException
 
 
+def get_on_the_fly_projection(mapcanvas):
+        
+    on_the_fly_projection = True if mapcanvas.hasCrsTransformEnabled() else False
+    if on_the_fly_projection:
+        project_crs = mapcanvas.mapRenderer().destinationCrs()
+    else:
+        project_crs = None
+        
+    return on_the_fly_projection, project_crs  
+     
+
 def vector_type( layer ):
     
     if not layer.type() == QgsMapLayer.VectorLayer:

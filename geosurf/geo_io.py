@@ -576,7 +576,7 @@ def shapefile_create_def_field( field_def ):
  
  
 
-def shapefile_create( path, geom_type, fields_dict_list, crs = None, layer_name = "layer" ):
+def shapefile_create( path, geom_type, fields_dict_list, crs, layer_name = "layer" ):
     
         
     driver = ogr.GetDriverByName("ESRI Shapefile")

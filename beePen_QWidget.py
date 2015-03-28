@@ -11,8 +11,10 @@ from osgeo import gdalconst
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
+from qgis.core import QgsVectorLayer, QgsMapLayerRegistry
 
-from geosurf.qgs_tools import loaded_line_layers
+
+from geosurf.qgs_tools import loaded_line_layers, get_on_the_fly_projection
 from geosurf.geo_io import shapefile_create
 from geosurf.qt_utils import new_file_path, lastUsedDir, setLastUsedDir
 
@@ -33,7 +35,7 @@ class beePen_QWidget( QWidget ):
     def setup_gui( self ): 
 
         self.dialog_layout = QHBoxLayout()        
-
+    
         # Annotation layer widgets
         
         layer_QGroupBox = QGroupBox(self)
@@ -44,14 +46,7 @@ class beePen_QWidget( QWidget ):
         create_new_QPushButton = QPushButton("Create new")  
         create_new_QPushButton.clicked.connect(self.create_annotation_layer)              
         layer_layout.addWidget( create_new_QPushButton)
-        
-        # use existing layer
-        layer_layout.addWidget( QLabel("Use"))        
-        use_layer_QComboBox = QComboBox()  
-        layer_layout.addWidget( use_layer_QComboBox)          
 
-        self.current_line_layers = loaded_line_layers()  
-        self.update_layer_comboBox( use_layer_QComboBox, self.current_line_layers )        
                 
         layer_QGroupBox.setLayout( layer_layout )
         self.dialog_layout.addWidget( layer_QGroupBox )        
@@ -84,24 +79,6 @@ class beePen_QWidget( QWidget ):
         pen_QGroupBox.setLayout( pen_layout )
         self.dialog_layout.addWidget( pen_QGroupBox )           
         
-
-        # Draw widgets
-
-        draw_QGroupBox = QGroupBox(self)
-        draw_QGroupBox.setTitle( 'Draw')        
-        draw_layout = QHBoxLayout()
-        
-        # start drawing
-        start_drawing_QPushButton = QPushButton("Start")        
-        draw_layout.addWidget( start_drawing_QPushButton)
-
-        # end drawing
-        end_drawing_QPushButton = QPushButton("End")        
-        draw_layout.addWidget( end_drawing_QPushButton)
-        
-        draw_QGroupBox.setLayout( draw_layout )
-        self.dialog_layout.addWidget( draw_QGroupBox )  
-        
                 
         # Undo widgets
 
@@ -133,38 +110,40 @@ class beePen_QWidget( QWidget ):
                 
 
 
-    def update_layer_comboBox( self, combobox, layer_list ):
-    
-        combobox.clear()
-        if len( layer_list ) == 0:
-            return
-        combobox.addItems( [ layer.name() for layer in layer_list ] ) 
-        
- 
     def create_annotation_layer(self):
+
+        _, project_crs = get_on_the_fly_projection(self.mapcanvas)
             
         file_path = new_file_path( self, 
                                    "Define shapefile", 
                                    lastUsedDir(),
                                    "annotation.shp",
-                                   "shapefile (shp, SHP)" )
+                                   "shapefiles (*.shp *.SHP)" )
         if file_path == "":
             return
 
         setLastUsedDir( file_path ) 
-                
+             
+        shape_name = file_path.split("/")[-1].split(".")[0] 
         geom_type = ogr.wkbLineString
             
         fields_dict_list = [{"name": "width", "ogr_type": ogr.OFTInteger},
                             {"name": "transp", "ogr_type": ogr.OFTInteger},
                             {"name": "color", "ogr_type": ogr.OFTString, "width": 20}]            
-            
-        outShapefile, outShapelayer = shapefile_create( file_path, geom_type, fields_dict_list, crs = None, layer_name = "layer" )
+         
+        try:   
+            _, _ = shapefile_create( file_path, geom_type, fields_dict_list, project_crs, layer_name = "layer" )
+        except:
+            self.warn("Error in shapefile creation")
+            return
         
-        self.info("Created")
+        annotation_layer = QgsVectorLayer(file_path, shape_name, "ogr")        
+        QgsMapLayerRegistry.instance().addMapLayer(annotation_layer)       
+    
+        self.info("Layer created")
         
         
-
+        
     def info(self, msg):
         
         QMessageBox.information( self,  _plugin_name_, msg )
