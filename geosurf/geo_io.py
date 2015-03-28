@@ -578,18 +578,6 @@ def shapefile_create_def_field( field_def ):
 
 def shapefile_create( path, geom_type, fields_dict_list, crs = None, layer_name = "layer" ):
     
-    """
-    crs_prj4: projection in Proj4 text format
-    geom_type = OGRwkbGeometryType: ogr.wkbPoint, ....  
-    list of:  
-        field dict: 'name', 
-                    'type': ogr.OFTString,
-                            ogr.wkbLineString, 
-                            ogr.wkbLinearRing,
-                            ogr.wkbPolygon,
-                        
-                    'width',    
-    """
         
     driver = ogr.GetDriverByName("ESRI Shapefile")
     

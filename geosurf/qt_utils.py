@@ -2,28 +2,34 @@
 from __future__  import division
 
 
+import os
+
+
 from PyQt4.QtCore import QSettings, QFileInfo
 from PyQt4.QtGui import QFileDialog
 
 
-# from module RASTERCALC by Barry Rowlingson    
+ 
 def lastUsedDir():
+    # from module RASTERCALC by Barry Rowlingson   
+
     settings = QSettings()
-    return settings.value( "/qProf/lastDir", "", type=str )
+    return settings.value( "/beePen/lastDir", "", type=str )
 
 
-# from module RASTERCALC by Barry Rowlingson
 def setLastUsedDir(lastDir):
+    # from module RASTERCALC by Barry Rowlingson
+    
     path = QFileInfo( lastDir ).absolutePath()
     settings = QSettings()
-    settings.setValue( "/qProf/lastDir", str(path) )
+    settings.setValue( "/beePen/lastDir", str(path) )
     
  
-def new_file_path( parent, show_msg, filter_extension, filter_text ):
+def new_file_path( parent, show_msg, dir_path, generic_name, filter_text ):
         
     output_filename = QFileDialog.getSaveFileName(parent, 
                                                   show_msg, 
-                                                  filter_extension, 
+                                                  dir_path + os.sep + generic_name,
                                                   filter_text )        
     if not output_filename: 
         return ''

@@ -4,12 +4,17 @@
 import os
 
 
+from osgeo import ogr, osr, gdal
+from osgeo import gdalconst 
+
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 
 from geosurf.qgs_tools import loaded_line_layers
-
+from geosurf.geo_io import shapefile_create
+from geosurf.qt_utils import new_file_path, lastUsedDir, setLastUsedDir
 
 
 _plugin_name_ = "beePen"
@@ -36,7 +41,8 @@ class beePen_QWidget( QWidget ):
         layer_layout = QHBoxLayout()
         
         # create new annotation layer button
-        create_new_QPushButton = QPushButton("Create new")        
+        create_new_QPushButton = QPushButton("Create new")  
+        create_new_QPushButton.clicked.connect(self.create_annotation_layer)              
         layer_layout.addWidget( create_new_QPushButton)
         
         # use existing layer
@@ -133,6 +139,29 @@ class beePen_QWidget( QWidget ):
         if len( layer_list ) == 0:
             return
         combobox.addItems( [ layer.name() for layer in layer_list ] ) 
+        
+ 
+    def create_annotation_layer(self):
+            
+        file_path = new_file_path( self, 
+                                   "Define shapefile", 
+                                   lastUsedDir(),
+                                   "annotation.shp",
+                                   "shapefile (shp, SHP)" )
+        if file_path == "":
+            return
+
+        setLastUsedDir( file_path ) 
+                
+        geom_type = ogr.wkbLineString
+            
+        fields_dict_list = [{"name": "width", "ogr_type": ogr.OFTInteger},
+                            {"name": "transp", "ogr_type": ogr.OFTInteger},
+                            {"name": "color", "ogr_type": ogr.OFTString, "width": 20}]            
+            
+        outShapefile, outShapelayer = shapefile_create( file_path, geom_type, fields_dict_list, crs = None, layer_name = "layer" )
+        
+        self.info("Created")
         
         
 
