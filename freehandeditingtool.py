@@ -18,7 +18,7 @@ class FreehandEditingTool(QgsMapTool):
     rbFinished = pyqtSignal('QgsGeometry*')
 
 
-    def __init__(self, canvas):
+    def __init__(self, canvas, color_name, pencil_width):
         
         QgsMapTool.__init__(self, canvas)
         
@@ -27,6 +27,9 @@ class FreehandEditingTool(QgsMapTool):
         self.mCtrl = None
         self.drawing = False
         self.ignoreclick = False
+        
+        self.color_name = color_name
+        self.pencil_width = pencil_width
         
         #our own fancy cursor
         self.cursor = QCursor(QPixmap(["16 16 3 1",
@@ -77,43 +80,17 @@ class FreehandEditingTool(QgsMapTool):
             return
         
         self.drawing = True
-        self.type = layer.geometryType()
-        self.isPolygon = (self.type != QGis.Line)
         
-        if self.isPolygon:
-            self.rb = QgsRubberBand(self.canvas, QGis.Polygon)
-            self.rb.setColor(QColor(255, 0, 0, 63))
-            self.rb.setWidth(2)
-        else:
-            self.rb = QgsRubberBand(self.canvas)
-            self.rb.setColor(QColor(255, 0, 0, 150))
-            self.rb.setWidth(1)
+        self.rb = QgsRubberBand(self.canvas)
+        self.rb.setColor(QColor(self.color_name))
+        self.rb.setWidth(self.pencil_width)
             
         x = event.pos().x()
-        y = event.pos().y()
-        
-        if self.isPolygon:
-            if self.mCtrl:
-                startingPoint = QPoint(x, y)
-                snapper = QgsMapCanvasSnapper(self.canvas)
-                retval, result = snapper.snapToCurrentLayer(startingPoint,
-                                               QgsSnapper.SnapToVertex)
-                if result:
-                    point = result[0].snappedVertex
-                else:
-                    retval, result = snapper.snapToBackgroundLayers(startingPoint)
-                    if result:
-                        point = result[0].snappedVertex
-                    else:
-                        point = self.toLayerCoordinates(layer, event.pos())
-            else:
-                point = self.toLayerCoordinates(layer, event.pos())
-            pointMap = self.toMapCoordinates(layer, point)
-            self.rb.addPoint(pointMap)
-        else:
-            point = self.toLayerCoordinates(layer, event.pos())
-            pointMap = self.toMapCoordinates(layer, point)
-            self.rb.addPoint(pointMap)
+        y = event.pos().y()        
+
+        point = self.toLayerCoordinates(layer, event.pos())
+        pointMap = self.toMapCoordinates(layer, point)
+        self.rb.addPoint(pointMap)
 
 
     def canvasMoveEvent(self, event):
@@ -141,7 +118,6 @@ class FreehandEditingTool(QgsMapTool):
         # reset rubberband and refresh the canvas
         self.rb.reset()
         self.rb = None
-        self.isPolygon = (self.type != QGis.Line)
         self.canvas.refresh()
 
 
@@ -161,14 +137,8 @@ class FreehandEditingTool(QgsMapTool):
         mc = self.canvas
         mc.setCursor(self.cursor)        
 
-        self.type = mc.currentLayer().geometryType()
 
-        # Check whether Geometry is a Line or a Polygon        
-        # toolbar button is only active with editable line and polygon layers
-        self.isPolygon = (self.type != QGis.Line)
-
-
-    def deactivate(self):
+    def deactivate_pencil(self):
         
         pass
     

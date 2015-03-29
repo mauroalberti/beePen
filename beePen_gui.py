@@ -59,35 +59,37 @@ class beePen_gui( object ):
         
         self.beePen_QAction = QAction(QIcon(":/plugins/beePen/icon.png"), "beePen", self.interface.mainWindow())
         self.beePen_QAction.setWhatsThis( "Graphic annotations for field work" ) 
-        self.beePen_QAction.triggered.connect( self.open_beePen )
+        self.beePen_QAction.triggered.connect( self.open_beePen_widget )
         self.interface.addPluginToMenu("beePen", self.beePen_QAction)
         self.interface.digitizeToolBar().addAction(self.beePen_QAction)
 
         self.beePen_pencil_QAction = QAction(QIcon(":/plugins/beePen/pencil.png"), "beePencil", self.interface.mainWindow())
         self.beePen_pencil_QAction.setWhatsThis( "Pencil for graphic annotations" ) 
-        # self.beePen_pencil_QAction.triggered.connect( self.open_beePencil )
         self.beePen_pencil_QAction.setToolTip("Pencil tool for beePen")
         self.beePen_pencil_QAction.setEnabled(False)
-        #self.interface.addPluginToMenu("beePencil", self.beePen_pencil_QAction)
         self.interface.digitizeToolBar().addAction(self.beePen_pencil_QAction)
 
         self.beePen_pencil_QAction.activated.connect(self.freehandediting)
         self.interface.currentLayerChanged['QgsMapLayer*'].connect(self.toggle)
-        self.canvas.mapToolSet['QgsMapTool*'].connect(self.deactivate)
-                
-        self.tool = FreehandEditingTool(self.canvas)
-        
-                       
-    def deactivate(self):
-        
-        self.beePen_pencil_QAction.setChecked(False)
-        if self.active:
-            self.tool.rbFinished['QgsGeometry*'].disconnect(self.createFeature)
-        self.active = False
+        self.canvas.mapToolSet['QgsMapTool*'].connect(self.deactivate_pencil)
+              
+              
+        self.color_name = "blue"
+        self.pencil_width = 5    
+        self.tool = FreehandEditingTool(self.canvas, self.color_name, self.pencil_width)
         
 
+    def get_current_color_name(self):
+        
+        return self.beePen_QWidget.pen_color_QComboBox.currentText()
 
-    def open_beePen(self):
+
+    def get_pencil_width(self):
+        
+        return  int(self.beePen_QWidget.pen_width_QComboBox.currentText())
+    
+        
+    def open_beePen_widget(self):
 
         beePen_DockWidget = QDockWidget( 'beePen', self.interface.mainWindow() )        
         beePen_DockWidget.setAttribute(Qt.WA_DeleteOnClose)
@@ -96,12 +98,6 @@ class beePen_gui( object ):
         beePen_DockWidget.setWidget( self.beePen_QWidget )      
         self.interface.addDockWidget( Qt.BottomDockWidgetArea, beePen_DockWidget )
 
-    
-    """
-    def open_beePencil(self):
-        
-        pass
-    """
 
 
     def freehandediting(self):
@@ -178,49 +174,22 @@ class beePen_gui( object ):
                                                   layerCRSSrsid))
         s = geom.simplify(tolerance)
 
-        #validate geometry
-        if not (s.validateGeometry()):
-            f.setGeometry(s)
-        else:
-            reply = QMessageBox.question(self.interface.mainWindow(),
-                                        'Feature not valid',
-                                        "The geometry of the feature you just added isn't valid."
-                                        "Do you want to use it anyway?",
-                                        QMessageBox.Yes, QMessageBox.No)
-            if reply == QMessageBox.Yes:
-                f.setGeometry(s)
-            else:
-                return
+        f.setGeometry(s)
 
         # add attribute fields to feature
         fields = layer.pendingFields()
-        if QGis.QGIS_VERSION_INT >= 10900:  # vector api change update
-            f.initAttributes(fields.count())
-            for i in range(fields.count()):
-                if provider.defaultValue(i):
-                    f.setAttribute(i, provider.defaultValue(i))
-        else:
-            for i in fields:
-                f.addAttribute(i, provider.defaultValue(i))
+
+        f.initAttributes(fields.count())
+        for i in range(fields.count()):
+            if provider.defaultValue(i):
+                f.setAttribute(i, provider.defaultValue(i))
 
         layer.beginEditCommand("Feature added")
-        if (settings.value("/qgis/digitizing/disable_enter_attribute_values_dialog",
-                           False, 
-                           type=bool)):
-            layer.addFeature(f)
-            layer.endEditCommand()
-        else:
-            dlg = self.interface.getFeatureForm(layer, f)
-            self.tool.setIgnoreClick(True)
-            if dlg.exec_():
-                layer.addFeature(f)
-                layer.endEditCommand()
-            else:
-                layer.destroyEditCommand()
-            self.tool.setIgnoreClick(False)
+        layer.addFeature(f)
+        layer.endEditCommand()
 
                 
-    def deactivate(self):
+    def deactivate_pencil(self):
         
         self.beePen_pencil_QAction.setChecked(False)
         if self.active:

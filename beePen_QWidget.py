@@ -60,21 +60,23 @@ class beePen_QWidget( QWidget ):
         
         # pen width
         pen_layout.addWidget( QLabel("Width"))        
-        pen_width_QComboBox = QComboBox()  
-        pen_width_QComboBox.insertItems(0, ["1","2","3","4","5"])      
-        pen_layout.addWidget( pen_width_QComboBox)
+        self.pen_width_QComboBox = QComboBox()  
+        self.pen_width_QComboBox.insertItems(0, ["5","10","20","1","2","3","4"])   
+        #self.pen_width_QComboBox.setCurrentText("5")           
+        pen_layout.addWidget( self.pen_width_QComboBox)
 
         # transparency
         pen_layout.addWidget( QLabel("Transp."))        
-        transparency_QComboBox = QComboBox() 
-        transparency_QComboBox.insertItems(0, ["0%","25%","50%","75%","100%"])        
-        pen_layout.addWidget( transparency_QComboBox)
+        self.transparency_QComboBox = QComboBox() 
+        self.transparency_QComboBox.insertItems(0, ["0%","25%","50%","75%","100%"])        
+        pen_layout.addWidget( self.transparency_QComboBox)
         
         # pen color
         pen_layout.addWidget( QLabel("Color"))        
-        pen_color_QComboBox = QComboBox() 
-        pen_color_QComboBox.insertItems(0, ["red","blue","yellow","green","orange","violet","pink"])         
-        pen_layout.addWidget( pen_color_QComboBox)
+        self.pen_color_QComboBox = QComboBox() 
+        self.pen_color_QComboBox.insertItems(0, ["blue","red","yellow","green","orange","violet","pink"])         
+        #self.pen_color_QComboBox.setCurrentText("blue")
+        pen_layout.addWidget( self.pen_color_QComboBox)
         
         pen_QGroupBox.setLayout( pen_layout )
         self.dialog_layout.addWidget( pen_QGroupBox )           
@@ -131,11 +133,15 @@ class beePen_QWidget( QWidget ):
                             {"name": "transp", "ogr_type": ogr.OFTInteger},
                             {"name": "color", "ogr_type": ogr.OFTString, "width": 20}]            
          
+
         try:   
             _, _ = shapefile_create( file_path, geom_type, fields_dict_list, project_crs, layer_name = "layer" )
         except:
             self.warn("Error in shapefile creation")
             return
+
+        #_, _ = shapefile_create( file_path, geom_type, fields_dict_list, project_crs, layer_name = "layer" )
+        
         
         annotation_layer = QgsVectorLayer(file_path, shape_name, "ogr")        
         QgsMapLayerRegistry.instance().addMapLayer(annotation_layer)       

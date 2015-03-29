@@ -352,10 +352,10 @@ class MapDigitizeTool( QgsMapTool ):
         self.canvas.setCursor(self.cursor)
 
 
-    def deactivate( self ):
+    def deactivate_pencil( self ):
         
-        #self.emit( SIGNAL("deactivate") )
-        QgsMapTool.deactivate( self )
+        #self.emit( SIGNAL("deactivate_pencil") )
+        QgsMapTool.deactivate_pencil( self )
 
 
     def isZoomTool( self ):
