@@ -46,6 +46,8 @@ from freehandeditingtool import FreehandEditingTool
 
 
 class beePen_gui( object ):
+    
+
 
     def __init__(self, interface):
 
@@ -53,6 +55,7 @@ class beePen_gui( object ):
         self.main_window = self.interface.mainWindow()
         self.canvas = self.interface.mapCanvas()        
         self.active = False
+        self.plugin_name = "beePen"
         
 
     def initGui(self):
@@ -72,35 +75,41 @@ class beePen_gui( object ):
         self.beePen_pencil_QAction.activated.connect(self.freehandediting)
         self.interface.currentLayerChanged['QgsMapLayer*'].connect(self.toggle)
         self.canvas.mapToolSet['QgsMapTool*'].connect(self.deactivate_pencil)
-              
-              
-        self.color_name = "blue"
-        self.pencil_width = 5    
-        self.tool = FreehandEditingTool(self.canvas, self.color_name, self.pencil_width)
-        
+           
+ 
+                
+        #self.tool = FreehandEditingTool(self.canvas)
 
-    def get_current_color_name(self):
-        
-        return self.beePen_QWidget.pen_color_QComboBox.currentText()
-
-
-    def get_pencil_width(self):
-        
-        return  int(self.beePen_QWidget.pen_width_QComboBox.currentText())
-    
+        self.is_beePen_widget_open = False
+            
         
     def open_beePen_widget(self):
 
         beePen_DockWidget = QDockWidget( 'beePen', self.interface.mainWindow() )        
         beePen_DockWidget.setAttribute(Qt.WA_DeleteOnClose)
         beePen_DockWidget.setAllowedAreas( Qt.BottomDockWidgetArea | Qt.TopDockWidgetArea )        
-        self.beePen_QWidget = beePen_QWidget( self.canvas )        
+        self.beePen_QWidget = beePen_QWidget( self.canvas, self.plugin_name )        
         beePen_DockWidget.setWidget( self.beePen_QWidget )      
         self.interface.addDockWidget( Qt.BottomDockWidgetArea, beePen_DockWidget )
 
 
+        
+                
+        self.is_beePen_widget_open = True
+
 
     def freehandediting(self):
+        
+        if not self.is_beePen_widget_open:
+            self.warn("First launch beePen button")
+            return
+                
+        self.tool = FreehandEditingTool(self.canvas,
+                                        self.beePen_QWidget.color_name,
+                                        self.beePen_QWidget.pencil_width,                                        
+                                        self.beePen_QWidget.transparency)
+
+        self.beePen_QWidget.style_signal.connect(self.tool.update_pen_style)  
         
         self.canvas.setMapTool(self.tool)
         self.beePen_pencil_QAction.setChecked(True)
@@ -180,9 +189,18 @@ class beePen_gui( object ):
         fields = layer.pendingFields()
 
         f.initAttributes(fields.count())
-        for i in range(fields.count()):
-            if provider.defaultValue(i):
-                f.setAttribute(i, provider.defaultValue(i))
+        try:
+            assert fields.count() == 3
+        except:
+            self.warn("Current layer as not the 3 required fields")
+            return
+        
+        record_values = [self.beePen_QWidget.pencil_width, 
+                         self.beePen_QWidget.transparency, 
+                         self.beePen_QWidget.color_name]
+                         
+        for ndx, value in enumerate(record_values):
+            f.setAttribute(ndx, value)
 
         layer.beginEditCommand("Feature added")
         layer.addFeature(f)
@@ -196,7 +214,17 @@ class beePen_gui( object ):
             self.tool.rbFinished['QgsGeometry*'].disconnect(self.createFeature)
         self.active = False
                         
-                       
+
+    def info(self, msg):
+        
+        QMessageBox.information( self.interface.mainWindow(),  self.plugin_name, msg )
+        
+        
+    def warn( self, msg):
+    
+        QMessageBox.warning( self.interface.mainWindow(),  self.plugin_name, msg )
+        
+                               
     def unload(self):
 
         self.interface.digitizeToolBar().removeAction(self.beePen_QAction)

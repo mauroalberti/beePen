@@ -576,7 +576,7 @@ def shapefile_create_def_field( field_def ):
  
  
 
-def shapefile_create( path, geom_type, fields_dict_list, crs, layer_name = "layer" ):
+def shapefile_create( path, geom_type, fields_dict_list, layer_name = "layer" ):
     
         
     driver = ogr.GetDriverByName("ESRI Shapefile")
@@ -585,12 +585,7 @@ def shapefile_create( path, geom_type, fields_dict_list, crs, layer_name = "laye
     if outShapefile is None:
         raise OGRIOException, 'Unable to save shapefile in provided path'
 
-    if crs is not None:
-        spatialReference = osr.SpatialReference()
-        spatialReference.ImportFromProj4( crs )    
-        outShapelayer = outShapefile.CreateLayer("layer", geom_type, spatialReference)
-    else:
-        outShapelayer = outShapefile.CreateLayer("layer", geom_type=geom_type )
+    outShapelayer = outShapefile.CreateLayer("layer", geom_type=geom_type )
         
     map( lambda field_def_params : outShapelayer.CreateField( shapefile_create_def_field( field_def_params ) ), fields_dict_list ) 
 
@@ -628,7 +623,7 @@ def ogr_get_solution_shapefile( path, fields_dict_list ):
     if os.path.exists( path ):
         driver.DeleteDataSource( str( path ) )
     
-    outShapefile, outShapelayer = shapefile_create( path, ogr.wkbPoint25D, fields_dict_list, crs = None, layer_name="layer" )
+    outShapefile, outShapelayer = shapefile_create( path, ogr.wkbPoint25D, fields_dict_list, layer_name="layer" )
     return outShapefile, outShapelayer, prev_solution_list
         
 
@@ -680,8 +675,7 @@ def geosurface_export_shapefile_pt3d( shapefile_path, geodata, fields_dict_list,
     
     point_shapefile, point_shapelayer = shapefile_create( shapefile_path, 
                                                           ogr.wkbPoint25D, 
-                                                          fields_dict_list,
-                                                          crs )
+                                                          fields_dict_list )
     
     field_list = [ field_dict["name"] for field_dict in fields_dict_list ]
     

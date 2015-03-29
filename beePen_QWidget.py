@@ -19,17 +19,26 @@ from geosurf.geo_io import shapefile_create
 from geosurf.qt_utils import new_file_path, lastUsedDir, setLastUsedDir
 
 
-_plugin_name_ = "beePen"
-
         
 class beePen_QWidget( QWidget ):
+    
+    style_signal = pyqtSignal(str, str)
 
 
-    def __init__( self, canvas ):
+    def __init__( self, canvas, plugin_name ):
 
         super( beePen_QWidget, self ).__init__() 
-        self.mapcanvas = canvas   
+        self.mapcanvas = canvas
+        
+        self.plugin_name = plugin_name
+        
+        self.color_name = "blue"
+        self.pencil_width = 5  
+        self.transparency = 0
+           
         self.setup_gui()
+        
+        ## self.pen_width_choice = pyqtSignal()
           
                       
     def setup_gui( self ): 
@@ -62,13 +71,16 @@ class beePen_QWidget( QWidget ):
         pen_layout.addWidget( QLabel("Width"))        
         self.pen_width_QComboBox = QComboBox()  
         self.pen_width_QComboBox.insertItems(0, ["5","10","20","1","2","3","4"])   
-        #self.pen_width_QComboBox.setCurrentText("5")           
+        #self.pen_width_QComboBox.setCurrentText("5")
+        # self.pen_width_QComboBox.currentTextChanged['QString &'].emit(self.pen_width_choice)  
+        self.pen_width_QComboBox.currentIndexChanged['QString'].connect(self.get_current_pencil_width_choice)         
         pen_layout.addWidget( self.pen_width_QComboBox)
 
         # transparency
         pen_layout.addWidget( QLabel("Transp."))        
         self.transparency_QComboBox = QComboBox() 
-        self.transparency_QComboBox.insertItems(0, ["0%","25%","50%","75%","100%"])        
+        self.transparency_QComboBox.insertItems(0, ["0%","25%","50%","75%","100%"]) 
+        self.transparency_QComboBox.currentIndexChanged['QString'].connect(self.get_current_transparency_value_choice)       
         pen_layout.addWidget( self.transparency_QComboBox)
         
         # pen color
@@ -76,6 +88,7 @@ class beePen_QWidget( QWidget ):
         self.pen_color_QComboBox = QComboBox() 
         self.pen_color_QComboBox.insertItems(0, ["blue","red","yellow","green","orange","violet","pink"])         
         #self.pen_color_QComboBox.setCurrentText("blue")
+        self.pen_color_QComboBox.currentIndexChanged['QString'].connect(self.get_current_color_name_choice)
         pen_layout.addWidget( self.pen_color_QComboBox)
         
         pen_QGroupBox.setLayout( pen_layout )
@@ -108,9 +121,8 @@ class beePen_QWidget( QWidget ):
                                                            
         self.setLayout(self.dialog_layout)            
         self.adjustSize()               
-        self.setWindowTitle(_plugin_name_)        
+        self.setWindowTitle(self.plugin_name)        
                 
-
 
     def create_annotation_layer(self):
 
@@ -134,14 +146,9 @@ class beePen_QWidget( QWidget ):
                             {"name": "color", "ogr_type": ogr.OFTString, "width": 20}]            
          
 
-        try:   
-            _, _ = shapefile_create( file_path, geom_type, fields_dict_list, project_crs, layer_name = "layer" )
-        except:
-            self.warn("Error in shapefile creation")
-            return
+        _, _ = shapefile_create( file_path, geom_type, fields_dict_list, layer_name = "layer" )
 
-        #_, _ = shapefile_create( file_path, geom_type, fields_dict_list, project_crs, layer_name = "layer" )
-        
+
         
         annotation_layer = QgsVectorLayer(file_path, shape_name, "ogr")        
         QgsMapLayerRegistry.instance().addMapLayer(annotation_layer)       
@@ -149,15 +156,35 @@ class beePen_QWidget( QWidget ):
         self.info("Layer created")
         
         
+    def get_current_color_name_choice(self):
+        
+        self.color_name = self.pen_color_QComboBox.currentText()
+        # self.info("Color is %s" % (self.color_name))
+        self.style_signal.emit("color", self.color_name)
+
+
+    def get_current_pencil_width_choice(self):
+        
+        self.pencil_width = int(self.pen_width_QComboBox.currentText())
+        # self.info("Width is %d" % (self.pencil_width))    
+        self.style_signal.emit("width", str(self.pencil_width))
+        
+
+    def get_current_transparency_value_choice(self):
+        
+        self.transparency = int(self.transparency_QComboBox.currentText()[:-1])
+        # self.info("Transparency is %d" % (self.transparency))        
+        self.style_signal.emit("transparency", str(self.transparency))
+                
         
     def info(self, msg):
         
-        QMessageBox.information( self,  _plugin_name_, msg )
+        QMessageBox.information( self,  self.plugin_name, msg )
         
         
     def warn( self, msg):
     
-        QMessageBox.warning( self,  _plugin_name_, msg )
+        QMessageBox.warning( self,  self.plugin_name, msg )
         
         
 

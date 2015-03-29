@@ -18,7 +18,7 @@ class FreehandEditingTool(QgsMapTool):
     rbFinished = pyqtSignal('QgsGeometry*')
 
 
-    def __init__(self, canvas, color_name, pencil_width):
+    def __init__(self, canvas, color_name, width, transparency):
         
         QgsMapTool.__init__(self, canvas)
         
@@ -29,7 +29,8 @@ class FreehandEditingTool(QgsMapTool):
         self.ignoreclick = False
         
         self.color_name = color_name
-        self.pencil_width = pencil_width
+        self.pencil_width = width
+        self.transparency = transparency
         
         #our own fancy cursor
         self.cursor = QCursor(QPixmap(["16 16 3 1",
@@ -54,6 +55,15 @@ class FreehandEditingTool(QgsMapTool):
                                        "       +.+      "]))
 
 
+    def update_pen_style(self, name, parameter):
+        
+        if name == "color":
+            self.color_name = parameter
+        elif name == "width":
+            self.pencil_width = int(parameter)
+        elif name == "transparency":
+            self.transparency = int(parameter)            
+              
 
     def keyPressEvent(self, event):
         
@@ -82,6 +92,8 @@ class FreehandEditingTool(QgsMapTool):
         self.drawing = True
         
         self.rb = QgsRubberBand(self.canvas)
+        
+        
         self.rb.setColor(QColor(self.color_name))
         self.rb.setWidth(self.pencil_width)
             
