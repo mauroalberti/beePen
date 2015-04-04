@@ -25,20 +25,23 @@ class beePen_QWidget( QWidget ):
     style_signal = pyqtSignal(str, str)
 
 
-    def __init__( self, canvas, plugin_name ):
+    def __init__( self, canvas, plugin_name, pen_widths, pen_transparencies, pen_colors ):
 
         super( beePen_QWidget, self ).__init__() 
         self.mapcanvas = canvas
         
         self.plugin_name = plugin_name
-        
-        self.color_name = "blue"
-        self.pencil_width = 5  
-        self.transparency = 0
+
+         
+        self.pen_widths = pen_widths
+        self.pen_transparencies = pen_transparencies
+        self.pen_colors = pen_colors
+              
+        self.color_name = self.pen_colors[0]
+        self.pencil_width = self.pen_widths[0]  
+        self.transparency = self.pen_transparencies[0]
            
         self.setup_gui()
-        
-        ## self.pen_width_choice = pyqtSignal()
           
                       
     def setup_gui( self ): 
@@ -59,7 +62,7 @@ class beePen_QWidget( QWidget ):
                 
         layer_QGroupBox.setLayout( layer_layout )
         self.dialog_layout.addWidget( layer_QGroupBox )        
-        
+
         
         # Pen widgets
         
@@ -70,23 +73,22 @@ class beePen_QWidget( QWidget ):
         # pen width
         pen_layout.addWidget( QLabel("Width"))        
         self.pen_width_QComboBox = QComboBox()  
-        self.pen_width_QComboBox.insertItems(0, ["5","10","20","1","2","3","4"])   
-        #self.pen_width_QComboBox.setCurrentText("5")
-        # self.pen_width_QComboBox.currentTextChanged['QString &'].emit(self.pen_width_choice)  
+        self.pen_width_QComboBox.insertItems(0, [str(width) for width in self.pen_widths])    
         self.pen_width_QComboBox.currentIndexChanged['QString'].connect(self.get_current_pencil_width_choice)         
         pen_layout.addWidget( self.pen_width_QComboBox)
 
         # transparency
         pen_layout.addWidget( QLabel("Transp."))        
         self.transparency_QComboBox = QComboBox() 
-        self.transparency_QComboBox.insertItems(0, ["0%","25%","50%","75%","100%"]) 
+        self.pen_transparencies_percent = [str(val)+"%" for val in self.pen_transparencies]
+        self.transparency_QComboBox.insertItems(0, self.pen_transparencies_percent) 
         self.transparency_QComboBox.currentIndexChanged['QString'].connect(self.get_current_transparency_value_choice)       
         pen_layout.addWidget( self.transparency_QComboBox)
         
         # pen color
         pen_layout.addWidget( QLabel("Color"))        
         self.pen_color_QComboBox = QComboBox() 
-        self.pen_color_QComboBox.insertItems(0, ["blue","red","yellow","green","orange","violet","pink"])         
+        self.pen_color_QComboBox.insertItems(0, self.pen_colors)         
         #self.pen_color_QComboBox.setCurrentText("blue")
         self.pen_color_QComboBox.currentIndexChanged['QString'].connect(self.get_current_color_name_choice)
         pen_layout.addWidget( self.pen_color_QComboBox)

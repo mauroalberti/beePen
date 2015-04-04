@@ -5,7 +5,7 @@ category=Vector
 version=0.0.1
 experimental=True
 qgisMinimumVersion=2.0
-author=Mauro DeDonatis, Mauro Alberti, Alessio Salvi
+author=Mauro Alberti, Mauro DeDonatis
 email=mauro.dedonatis@uniurb.it
 icon=./icon.png
 

@@ -37,6 +37,7 @@ from PyQt4.QtGui import *
 
 from qgis.core import *
 
+
 import resources
 
 
@@ -57,6 +58,12 @@ class beePen_gui( object ):
         self.active = False
         self.plugin_name = "beePen"
         
+         
+        self.pen_widths = [5,10,20,30,50,1,2,3,4]
+        self.pen_transparencies = [0,25,50,75]
+        self.pen_colors = ["blue","red","yellow","green","orange","violet","pink"]
+        
+        
 
     def initGui(self):
         
@@ -75,10 +82,7 @@ class beePen_gui( object ):
         self.beePen_pencil_QAction.activated.connect(self.freehandediting)
         self.interface.currentLayerChanged['QgsMapLayer*'].connect(self.toggle)
         self.canvas.mapToolSet['QgsMapTool*'].connect(self.deactivate_pencil)
-           
- 
-                
-        #self.tool = FreehandEditingTool(self.canvas)
+
 
         self.is_beePen_widget_open = False
             
@@ -88,14 +92,13 @@ class beePen_gui( object ):
         beePen_DockWidget = QDockWidget( 'beePen', self.interface.mainWindow() )        
         beePen_DockWidget.setAttribute(Qt.WA_DeleteOnClose)
         beePen_DockWidget.setAllowedAreas( Qt.BottomDockWidgetArea | Qt.TopDockWidgetArea )        
-        self.beePen_QWidget = beePen_QWidget( self.canvas, self.plugin_name )        
+        self.beePen_QWidget = beePen_QWidget( self.canvas, self.plugin_name, self.pen_widths, self.pen_transparencies, self.pen_colors )        
         beePen_DockWidget.setWidget( self.beePen_QWidget )      
         self.interface.addDockWidget( Qt.BottomDockWidgetArea, beePen_DockWidget )
-
-
-        
                 
         self.is_beePen_widget_open = True
+        
+        self.renderer = self.create_symbol_renderer()
 
 
     def freehandediting(self):
@@ -157,6 +160,48 @@ class beePen_gui( object ):
                     pass
  
 
+    def create_symbol_renderer(self):
+
+    
+        """
+        # define a lookup: value -> (color, label)
+        animals = {
+            'cat': ('#f00', 'Small cat'),
+            'dog': ('#0f0', 'Big dog'),
+            'sheep': ('#fff', 'Fluffy sheep'),
+            '': ('#000', 'Unknown'),
+        }
+        """
+
+        """
+        self.pen_widths = [5,10,20,30,50,1,2,3,4]
+        self.pen_transparencies = [0,25,50,75,100]
+        self.pen_colors = ["blue","red","yellow","green","orange","violet","pink"]
+        """
+        
+        # create a category for each item in animals
+        categories = []
+        for pen_color in self.pen_colors:
+            for pen_width in self.pen_widths:
+                for transp in self.pen_transparencies:
+                    symbol = QgsSymbolV2.defaultSymbol( QGis.Line )
+                    symbol.setColor(QColor(pen_color))
+                    symbol.setWidth(pen_width/3.0)
+                    symbol.setAlpha(1.0-(transp/100.0))
+                
+                    category = QgsRendererCategoryV2(pen_color+"_"+str(pen_width)+"_"+str(transp), symbol, '')
+                    categories.append(category)
+        
+        # create the renderer and assign it to a layer
+        expression =  '''concat("color", '_', "width", '_', "transp")'''
+        renderer = QgsCategorizedSymbolRendererV2(expression, categories)
+        
+        return renderer
+    
+ 
+
+        
+        
     def createFeature(self, geom):
         
         settings = QSettings()
@@ -166,6 +211,12 @@ class beePen_gui( object ):
             return
         
         renderer = self.canvas.mapRenderer()
+        
+        layer.setRendererV2(self.renderer)           
+        
+        
+        
+        
         layerCRSSrsid = layer.crs().srsid()
         projectCRSSrsid = renderer.destinationCrs().srsid()
         provider = layer.dataProvider()
