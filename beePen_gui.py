@@ -83,24 +83,33 @@ class beePen_gui( object ):
         self.interface.currentLayerChanged['QgsMapLayer*'].connect(self.toggle)
         self.canvas.mapToolSet['QgsMapTool*'].connect(self.deactivate_pencil)
 
-
         self.is_beePen_widget_open = False
             
         
     def open_beePen_widget(self):
+        
+        if self.is_beePen_widget_open:
+            self.warn("beePen is already open")
+            return
 
         beePen_DockWidget = QDockWidget( 'beePen', self.interface.mainWindow() )        
         beePen_DockWidget.setAttribute(Qt.WA_DeleteOnClose)
         beePen_DockWidget.setAllowedAreas( Qt.BottomDockWidgetArea | Qt.TopDockWidgetArea )        
         self.beePen_QWidget = beePen_QWidget( self.canvas, self.plugin_name, self.pen_widths, self.pen_transparencies, self.pen_colors )        
-        beePen_DockWidget.setWidget( self.beePen_QWidget )      
+        beePen_DockWidget.setWidget( self.beePen_QWidget )
+        beePen_DockWidget.destroyed.connect( self.closeEvent )        
         self.interface.addDockWidget( Qt.BottomDockWidgetArea, beePen_DockWidget )
+        
+        self.renderer = self.create_symbol_renderer()
                 
         self.is_beePen_widget_open = True
         
-        self.renderer = self.create_symbol_renderer()
 
-
+    def closeEvent(self):
+        
+        self.is_beePen_widget_open = False
+        
+                
     def freehandediting(self):
         
         if not self.is_beePen_widget_open:
@@ -162,24 +171,6 @@ class beePen_gui( object ):
 
     def create_symbol_renderer(self):
 
-    
-        """
-        # define a lookup: value -> (color, label)
-        animals = {
-            'cat': ('#f00', 'Small cat'),
-            'dog': ('#0f0', 'Big dog'),
-            'sheep': ('#fff', 'Fluffy sheep'),
-            '': ('#000', 'Unknown'),
-        }
-        """
-
-        """
-        self.pen_widths = [5,10,20,30,50,1,2,3,4]
-        self.pen_transparencies = [0,25,50,75,100]
-        self.pen_colors = ["blue","red","yellow","green","orange","violet","pink"]
-        """
-        
-        # create a category for each item in animals
         categories = []
         for pen_color in self.pen_colors:
             for pen_width in self.pen_widths:
@@ -197,9 +188,6 @@ class beePen_gui( object ):
         renderer = QgsCategorizedSymbolRendererV2(expression, categories)
         
         return renderer
-    
- 
-
         
         
     def createFeature(self, geom):
@@ -243,7 +231,7 @@ class beePen_gui( object ):
         try:
             assert fields.count() == 3
         except:
-            self.warn("Current layer as not the 3 required fields")
+            self.warn("Current layer has not the required fields for annotation layer")
             return
         
         record_values = [self.beePen_QWidget.pencil_width, 

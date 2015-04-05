@@ -96,7 +96,7 @@ class beePen_QWidget( QWidget ):
         pen_QGroupBox.setLayout( pen_layout )
         self.dialog_layout.addWidget( pen_QGroupBox )           
         
-                
+        """                
         # Undo widgets
 
         undo_QGroupBox = QGroupBox(self)
@@ -117,6 +117,7 @@ class beePen_QWidget( QWidget ):
                             
         undo_QGroupBox.setLayout( undo_layout )
         self.dialog_layout.addWidget( undo_QGroupBox )  
+        """
         
         
         # final settings
