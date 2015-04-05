@@ -95,30 +95,7 @@ class beePen_QWidget( QWidget ):
         
         pen_QGroupBox.setLayout( pen_layout )
         self.dialog_layout.addWidget( pen_QGroupBox )           
-        
-        """                
-        # Undo widgets
-
-        undo_QGroupBox = QGroupBox(self)
-        undo_QGroupBox.setTitle( 'Delete')        
-        undo_layout = QHBoxLayout()
-        
-        # clear last button
-        clear_last_QPushButton = QPushButton("Last")        
-        undo_layout.addWidget( clear_last_QPushButton)
-                
-        # clear all button
-        clear_all_QPushButton = QPushButton("All")        
-        undo_layout.addWidget( clear_all_QPushButton)
-        
-        # delete tool
-        delete_tool_QPushButton = QPushButton("Select")        
-        undo_layout.addWidget( delete_tool_QPushButton)
-                            
-        undo_QGroupBox.setLayout( undo_layout )
-        self.dialog_layout.addWidget( undo_QGroupBox )  
-        """
-        
+         
         
         # final settings
                                                            

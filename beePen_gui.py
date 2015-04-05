@@ -1,11 +1,8 @@
 # beePen
 # conception by Mauro Dedonatis
-# code by Mauro Alberti
+# implementation by Mauro Alberti
 #
-#
-#
-# Ccontains code adapted from:
-#
+# Contains code adapted from:
 # 'Freehand Editing  Plugin', Copyright (C) Pavol Kapusta
 #
 #
