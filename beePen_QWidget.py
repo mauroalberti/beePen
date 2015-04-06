@@ -95,14 +95,39 @@ class beePen_QWidget( QWidget ):
         
         pen_QGroupBox.setLayout( pen_layout )
         self.dialog_layout.addWidget( pen_QGroupBox )           
-         
+
+
+        # Help widgets
+        
+        help_QGroupBox = QGroupBox(self)
+        help_QGroupBox.setTitle( 'Help')        
+        help_layout = QHBoxLayout()
+        
+        # help button
+        help_QPushButton = QPushButton("Help")  
+        help_QPushButton.clicked.connect(self.open_help_page)              
+        help_layout.addWidget( help_QPushButton)
+                
+        help_QGroupBox.setLayout( help_layout )
+        self.dialog_layout.addWidget( help_QGroupBox )    
+               
         
         # final settings
                                                            
         self.setLayout(self.dialog_layout)            
         self.adjustSize()               
         self.setWindowTitle(self.plugin_name)        
-                
+  
+  
+    def open_help_page(self):
+        
+        import webbrowser
+        local_url = os.path.dirname(os.path.realpath(__file__)) + os.sep + "help" + os.sep + "help.html"
+        local_url = local_url.replace("\\","/")
+        if not webbrowser.open(local_url):
+            self.warn("Error with browser.\nOpen manually help/help.html")
+
+
 
     def create_annotation_layer(self):
 
