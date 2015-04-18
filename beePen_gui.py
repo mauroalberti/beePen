@@ -56,7 +56,7 @@ class beePen_gui( object ):
         self.plugin_name = "beePen"
         
          
-        self.pen_widths = [5,10,20,30,50,1,2,3,4]
+        self.pen_widths = [1,5,10,25,50,100,250,500,750,1000]
         self.pen_transparencies = [0,25,50,75]
         self.pen_colors = ["blue","red","yellow","green","orange","violet","pink"]
         
@@ -169,13 +169,16 @@ class beePen_gui( object ):
     def create_symbol_renderer(self):
 
         categories = []
+        symbols = []
         for pen_color in self.pen_colors:
             for pen_width in self.pen_widths:
                 for transp in self.pen_transparencies:
                     symbol = QgsSymbolV2.defaultSymbol( QGis.Line )
                     symbol.setColor(QColor(pen_color))
-                    symbol.setWidth(pen_width/3.0)
+                    symbol.setOutputUnit(QgsSymbolV2.MapUnit)
+                    symbol.setWidth(pen_width)
                     symbol.setAlpha(1.0-(transp/100.0))
+                    symbols.append(symbol)
                 
                     category = QgsRendererCategoryV2(pen_color+"_"+str(pen_width)+"_"+str(transp), symbol, '')
                     categories.append(category)
@@ -198,9 +201,6 @@ class beePen_gui( object ):
         renderer = self.canvas.mapRenderer()
         
         layer.setRendererV2(self.renderer)           
-        
-        
-        
         
         layerCRSSrsid = layer.crs().srsid()
         projectCRSSrsid = renderer.destinationCrs().srsid()

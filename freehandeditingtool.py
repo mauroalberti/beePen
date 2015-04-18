@@ -20,6 +20,7 @@ class FreehandEditingTool(QgsMapTool):
 
     def __init__(self, canvas, color_name, width, transparency):
         
+        
         QgsMapTool.__init__(self, canvas)
         
         self.canvas = canvas
@@ -31,6 +32,9 @@ class FreehandEditingTool(QgsMapTool):
         self.color_name = color_name
         self.pencil_width = width
         self.transparency = transparency
+        
+        self.rb_conversion_factor = 3800 # empirical factor for adapting rubbersheet band width to scale
+        
         
         #our own fancy cursor
         self.cursor = QCursor(QPixmap(["16 16 3 1",
@@ -95,7 +99,7 @@ class FreehandEditingTool(QgsMapTool):
         
         
         self.rb.setColor(QColor(self.color_name))
-        self.rb.setWidth(self.pencil_width)
+        self.rb.setWidth(self.pencil_width*self.rb_conversion_factor/self.canvas.scale()) # denominator is empirically-derived value
             
         x = event.pos().x()
         y = event.pos().y()        

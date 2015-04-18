@@ -71,7 +71,7 @@ class beePen_QWidget( QWidget ):
         pen_layout = QHBoxLayout()
         
         # pen width
-        pen_layout.addWidget( QLabel("Width"))        
+        pen_layout.addWidget( QLabel("Width (map units)"))        
         self.pen_width_QComboBox = QComboBox()  
         self.pen_width_QComboBox.insertItems(0, [str(width) for width in self.pen_widths])    
         self.pen_width_QComboBox.currentIndexChanged['QString'].connect(self.get_current_pencil_width_choice)         
