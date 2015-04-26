@@ -196,6 +196,17 @@ class beePen_gui( object ):
 
         layer = self.canvas.currentLayer()
         if layer is None:
+            del geom
+            return
+        
+        fields = layer.pendingFields()   
+        field_names = [field.name() for field in fields]
+        
+        if not "width" in field_names and \
+           not "transp" in field_names and \
+           not "color" in field_names:
+            del geom
+            self.warn("The current active layer is not an annotation layer")
             return
         
         renderer = self.canvas.mapRenderer()
@@ -218,6 +229,8 @@ class beePen_gui( object ):
             geom.transform(QgsCoordinateTransform(projectCRSSrsid,
                                                   layerCRSSrsid))
         s = geom.simplify(tolerance)
+        
+        del geom
 
         f.setGeometry(s)
 
@@ -226,7 +239,7 @@ class beePen_gui( object ):
 
         f.initAttributes(fields.count())
         try:
-            assert fields.count() == 3
+            assert fields.count() >= 3
         except:
             self.warn("Current layer has not the required fields for annotation layer")
             return
@@ -241,6 +254,7 @@ class beePen_gui( object ):
         layer.beginEditCommand("Feature added")
         layer.addFeature(f)
         layer.endEditCommand()
+        
 
                 
     def deactivate_pencil(self):
