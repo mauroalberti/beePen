@@ -1,2 +1,5 @@
 pencil from: 
 https://www.iconfinder.com/icons/59048/edit_pen_pencil_write_icon#size=32
+
+rubber from:
+https://www.iconfinder.com/icons/104596/rubber_icon#size=32

@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/plugins/beePen" >
-        <file>icon.png</file>	
-        <file>pencil.png</file>
+        <file>icons/icon.png</file>	
+        <file>icons/pencil.png</file>
+        <file>icons/rubber.png</file>
     </qresource>
 </RCC>
