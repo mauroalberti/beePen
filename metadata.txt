@@ -17,7 +17,7 @@ changelog=
   0.0.5 : - help added 
   0.0.6 : - pencil widths in map units, so they scale correctly with map extent 
   0.0.7 : - removed unwanted styling on non-annotation layers 
-  0.0.8 : - removed bug appearing when multiple clicks on pencil tool
+  0.0.8 : - removed bug appearing when multiple clicks on pencil tool; added eraser tool
 
 ; tags are in comma separated value format, spaces are allowed
 tags = annotation, field work, geology, mapping

@@ -145,7 +145,6 @@ class beePen_gui( object ):
             self.beePen_pencil_QAction.setEnabled(True)
             self.beePen_rubber_QAction.setEnabled(True)
 
-            """
             try:  # remove any existing connection first
                 layer.editingStopped.disconnect(self.toggle)
             except TypeError:  # missing connection
@@ -156,7 +155,6 @@ class beePen_gui( object ):
                 layer.editingStarted.disconnect(self.toggle)
             except TypeError:  # missing connection
                 pass
-            """
 
         else:
             
@@ -270,6 +268,7 @@ class beePen_gui( object ):
         layer.addFeature(f)
         layer.endEditCommand()
         
+        
 
     def deleteFeatures(self, geom):
         
@@ -309,7 +308,20 @@ class beePen_gui( object ):
         if layerCRSSrsid != projectCRSSrsid:
             geom.transform(QgsCoordinateTransform(projectCRSSrsid,
                                                   layerCRSSrsid))
-        s = geom.simplify(tolerance)
+        simpl_geom = geom.simplify(tolerance)
+        
+        provider = layer.dataProvider()
+
+        for feat in layer.getFeatures():
+            
+            target_geom = feat.geometry()
+            if target_geom.intersects(simpl_geom):
+                layer.beginEditCommand("Feature deleted")
+                layer.deleteFeature( feat.id() )
+                layer.endEditCommand()                
+            else: 
+                pass
+
         
                     
     def deactivate_pencil(self, mapTool = None):        
@@ -337,7 +349,7 @@ class beePen_gui( object ):
         self.beePen_rubber_QAction.setChecked(True)
         self.eraser_tool.rbFinished['QgsGeometry*'].connect(self.deleteFeatures)
         self.eraser_active = True
-        
+        #
 
     def info(self, msg):
         
