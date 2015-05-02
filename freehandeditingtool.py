@@ -198,7 +198,7 @@ class EraserTool(QgsMapTool):
         self.cursor = QCursor(QPixmap(["16 16 3 1",
                                        "      c None",
                                        ".     c #FF0000",
-                                       "+     c #faed55",
+                                       "+     c #EEA9B8",
                                        "                ",
                                        "       +.+      ",
                                        "      ++.++     ",
@@ -244,10 +244,8 @@ class EraserTool(QgsMapTool):
         
         self.drawing = True
         
-        self.rb = QgsRubberBand(self.canvas)
-        
-        """
-        
+        self.rb = QgsRubberBand(self.canvas)        
+
         self.rb.setColor(QColor("black"))
 
         x = event.pos().x()
@@ -256,7 +254,7 @@ class EraserTool(QgsMapTool):
         point = self.toLayerCoordinates(layer, event.pos())
         pointMap = self.toMapCoordinates(layer, point)
         self.rb.addPoint(pointMap)
-        """
+        
 
 
     def canvasMoveEvent(self, event):

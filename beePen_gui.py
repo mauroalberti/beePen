@@ -273,8 +273,44 @@ class beePen_gui( object ):
 
     def deleteFeatures(self, geom):
         
-        pass
-    
+        settings = QSettings()
+
+        layer = self.canvas.currentLayer()
+        if layer is None:
+            del geom
+            return
+        
+        fields = layer.pendingFields()   
+        field_names = [field.name() for field in fields]
+        
+        if not "width" in field_names and \
+           not "transp" in field_names and \
+           not "color" in field_names:
+            del geom
+            self.warn("The current active layer is not an annotation layer")
+            return
+        
+        renderer = self.canvas.mapRenderer()
+        
+        layer.setRendererV2(self.renderer)           
+        
+        layerCRSSrsid = layer.crs().srsid()
+        projectCRSSrsid = renderer.destinationCrs().srsid()
+        provider = layer.dataProvider()
+        f = QgsFeature()
+
+        if layer.crs().projectionAcronym() == "longlat":
+            tolerance = 0.000
+        else:
+            tolerance = settings.value("/beePen/tolerance",
+                                       0.000, type=float)
+
+        # on the Fly reprojection.
+        if layerCRSSrsid != projectCRSSrsid:
+            geom.transform(QgsCoordinateTransform(projectCRSSrsid,
+                                                  layerCRSSrsid))
+        s = geom.simplify(tolerance)
+        
                     
     def deactivate_pencil(self, mapTool = None):        
                 
