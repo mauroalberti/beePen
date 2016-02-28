@@ -54,7 +54,7 @@ class beePen_gui( object ):
         self.pencil_active = False
         self.plugin_name = "beePen"        
          
-        self.pen_widths = [1,5,10,25,50,100,250,500,750,1000]
+        self.pen_widths = [0.01, 0.02, 0.05, 0.08, 0.1, 0.2, 0.5, 1,5,10,25,50,100,250,500,750,1000]
         self.pen_transparencies = [0,25,50,75]
         self.pen_colors = ["blue","red","yellow","green","orange","violet","pink"]
         

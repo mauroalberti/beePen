@@ -146,7 +146,7 @@ class beePen_QWidget( QWidget ):
         shape_name = file_path.split("/")[-1].split(".")[0] 
         geom_type = ogr.wkbLineString
             
-        fields_dict_list = [{"name": "width", "ogr_type": ogr.OFTInteger},
+        fields_dict_list = [{"name": "width", "ogr_type": ogr.OFTReal},
                             {"name": "transp", "ogr_type": ogr.OFTInteger},
                             {"name": "color", "ogr_type": ogr.OFTString, "width": 20}]            
          
@@ -170,7 +170,7 @@ class beePen_QWidget( QWidget ):
 
     def get_current_pencil_width_choice(self):
         
-        self.pencil_width = int(self.pen_width_QComboBox.currentText())
+        self.pencil_width = float(self.pen_width_QComboBox.currentText())
         # self.info("Width is %d" % (self.pencil_width))    
         self.style_signal.emit("width", str(self.pencil_width))
         

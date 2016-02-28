@@ -65,7 +65,7 @@ class FreehandEditingTool(QgsMapTool):
         if name == "color":
             self.color_name = parameter
         elif name == "width":
-            self.pencil_width = int(parameter)
+            self.pencil_width = float(parameter)
         elif name == "transparency":
             self.transparency = int(parameter)            
               
