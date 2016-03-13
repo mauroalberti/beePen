@@ -2,7 +2,7 @@
 name=beePen
 description=Allows to draw freehand lines in a layer
 category=Vector 
-version=0.0.9
+version=0.1.0
 experimental=False
 qgisMinimumVersion=2.0
 author=Mauro Alberti, Mauro DeDonatis
@@ -18,7 +18,8 @@ changelog=
   0.0.6 : - pencil widths in map units, so they scale correctly with map extent 
   0.0.7 : - removed unwanted styling on non-annotation layers 
   0.0.8 : - removed bug appearing when multiple clicks on pencil tool; added eraser tool
-  0.0.8 : - added sub-unit pencil widths
+  0.0.9 : - added sub-unit pencil widths
+  0.1.0 : - removed possibility to save annotation shapefile on an existing one
   
 ; tags are in comma separated value format, spaces are allowed
 tags = annotation, field work, geology, mapping

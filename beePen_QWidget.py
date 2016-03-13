@@ -141,6 +141,10 @@ class beePen_QWidget( QWidget ):
         if file_path == "":
             return
 
+        if os.path.exists(file_path):
+            self.warn("Shapefile already exists.\nChoose a new name")
+            return
+
         setLastUsedDir( file_path ) 
              
         shape_name = file_path.split("/")[-1].split(".")[0] 
