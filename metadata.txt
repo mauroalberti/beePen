@@ -1,6 +1,9 @@
 [general]
 name=beePen
 description=Allows to draw freehand lines in a layer
+about=Plugin for drawing freehand lines with map-specified pen widths.
+  Its applications are for field mapping. 
+  It is based on the "Freehand" plugin.
 category=Vector 
 version=0.1.0
 experimental=False
