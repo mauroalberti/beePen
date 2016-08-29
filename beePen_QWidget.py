@@ -28,7 +28,7 @@ class beePen_QWidget( QWidget ):
     def __init__( self, canvas, plugin_name, pen_widths, pen_transparencies, pen_colors ):
 
         super( beePen_QWidget, self ).__init__() 
-        self.mapcanvas = canvas
+        self.canvas = canvas
         
         self.plugin_name = plugin_name
 
@@ -128,16 +128,25 @@ class beePen_QWidget( QWidget ):
             self.warn("Error with browser.\nOpen manually help/help.html")
 
 
+    def get_prjcrs_as_proj4str(self):
+        # get project CRS information
+        hasOTFP, project_crs = get_on_the_fly_projection(self.canvas)
+        if hasOTFP:
+            proj4_str = str(project_crs.toProj4())
+            project_crs_osr = osr.SpatialReference()
+            project_crs_osr.ImportFromProj4(proj4_str)
+            return project_crs_osr
+        else:
+            return None
 
     def create_annotation_layer(self):
 
-        _, project_crs = get_on_the_fly_projection(self.mapcanvas)
+        _, project_crs = get_on_the_fly_projection(self.canvas)
             
-        file_path = new_file_path( self, 
-                                   "Define shapefile", 
-                                   lastUsedDir(),
-                                   "annotation.shp",
-                                   "shapefiles (*.shp *.SHP)" )
+        file_path = new_file_path(self,
+                                  "Define shapefile",
+                                  os.path.join(lastUsedDir(), "annotation.shp"),
+                                  "shapefiles (*.shp *.SHP)" )
         if file_path == "":
             return
 
@@ -152,12 +161,12 @@ class beePen_QWidget( QWidget ):
             
         fields_dict_list = [{"name": "width", "ogr_type": ogr.OFTReal},
                             {"name": "transp", "ogr_type": ogr.OFTInteger},
-                            {"name": "color", "ogr_type": ogr.OFTString, "width": 20}]            
-         
+                            {"name": "color", "ogr_type": ogr.OFTString, "width": 20}]
 
-        _, _ = shapefile_create( file_path, geom_type, fields_dict_list, layer_name = "layer" )
+        # get project CRS information
+        project_crs_osr = self.get_prjcrs_as_proj4str()
 
-
+        shapefile_create(file_path, geom_type, fields_dict_list, project_crs_osr)
         
         annotation_layer = QgsVectorLayer(file_path, shape_name, "ogr")        
         QgsMapLayerRegistry.instance().addMapLayer(annotation_layer)       
