@@ -1,31 +1,26 @@
 # -*- coding: utf-8 -*-
 
-
-# adapted from Freehabdediting plugin 
+# adapted from Freehabdediting plugin
 # by Pavol Kapusta
-
 
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from qgis.core import *
 from qgis.gui import *
-
+from qt_utils.qt_utils import warn
 
 
 class FreehandEditingTool(QgsMapTool):
-    
 
     rbFinished = pyqtSignal('QgsGeometry*')
-
+    rubberband_conv_factor = 3800  # empirical factor for adapting rubberband width to actual scale
 
     def __init__(self, canvas, color_name, width, transparency):
-        
         
         QgsMapTool.__init__(self, canvas)
         
         self.canvas = canvas
-        self.rb = None
+        self.rubberband = None
         self.mCtrl = None
         self.drawing = False
         self.ignoreclick = False
@@ -33,11 +28,8 @@ class FreehandEditingTool(QgsMapTool):
         self.color_name = color_name
         self.pencil_width = width
         self.transparency = transparency
-        
-        self.rb_conversion_factor = 3800 # empirical factor for adapting rubbersheet band width to scale
-        
-        
-        #our own fancy cursor
+
+        # our own fancy cursor
         self.cursor = QCursor(QPixmap(["16 16 3 1",
                                        "      c None",
                                        ".     c #FF0000",
@@ -67,8 +59,11 @@ class FreehandEditingTool(QgsMapTool):
         elif name == "width":
             self.pencil_width = float(parameter)
         elif name == "transparency":
-            self.transparency = int(parameter)            
-              
+            self.transparency = int(parameter)
+        else:
+            warn(self.interface.mainWindow(), self.plugin_name, "Error with pen style update")
+            return
+
 
     def keyPressEvent(self, event):
         
@@ -96,26 +91,25 @@ class FreehandEditingTool(QgsMapTool):
         
         self.drawing = True
         
-        self.rb = QgsRubberBand(self.canvas)
+        self.rubberband = QgsRubberBand(self.canvas)
         
-        
-        self.rb.setColor(QColor(self.color_name))
-        self.rb.setWidth(self.pencil_width*self.rb_conversion_factor/self.canvas.scale()) # denominator is empirically-derived value
+        self.rubberband.setColor(QColor(self.color_name))
+        self.rubberband.setWidth(self.pencil_width * FreehandEditingTool.rubberband_conv_factor / self.canvas.scale()) # denominator is empirically-derived value
             
         x = event.pos().x()
         y = event.pos().y()        
 
         point = self.toLayerCoordinates(layer, event.pos())
         pointMap = self.toMapCoordinates(layer, point)
-        self.rb.addPoint(pointMap)
+        self.rubberband.addPoint(pointMap)
 
 
     def canvasMoveEvent(self, event):
         
-        if self.ignoreclick or not self.rb:
+        if self.ignoreclick or not self.rubberband:
             return
         
-        self.rb.addPoint(self.toMapCoordinates(event.pos()))
+        self.rubberband.addPoint(self.toMapCoordinates(event.pos()))
 
 
     def canvasReleaseEvent(self, event):
@@ -125,16 +119,16 @@ class FreehandEditingTool(QgsMapTool):
         
         self.drawing = False
         
-        if not self.rb:
+        if not self.rubberband:
             return
         
-        if self.rb.numberOfVertices() > 2:
-            geom = self.rb.asGeometry()
+        if self.rubberband.numberOfVertices() > 2:
+            geom = self.rubberband.asGeometry()
             self.rbFinished.emit(geom)
 
         # reset rubberband and refresh the canvas
-        self.rb.reset()
-        self.rb = None
+        self.rubberband.reset()
+        self.rubberband = None
         self.canvas.refresh()
 
 
