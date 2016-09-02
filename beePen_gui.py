@@ -75,7 +75,7 @@ class beePen_gui(object):
         self.beePen_pencil_QAction.setEnabled(False)
         self.interface.digitizeToolBar().addAction(self.beePen_pencil_QAction)
 
-        self.interface.currentLayerChanged['QgsMapLayer*'].connect(self.toggle)
+        self.interface.currentLayerChanged['QgsMapLayer*'].connect(self.set_beepen_commands)
         self.canvas.mapToolSet['QgsMapTool*'].connect(self.deactivate_pencil)   
         
         self.beePen_rubber_QAction = QAction(QIcon(":/plugins/%s/icons/rubber.png" % self.plugin_name),
@@ -113,12 +113,16 @@ class beePen_gui(object):
         self.renderer = self.create_symbol_renderer()
                 
         self.isBeePenWidgetOpen = True
+
+        self.set_beepen_commands()
         
 
     def closeEvent(self):
         
         self.isBeePenWidgetOpen = False
-        
+        self.beePen_pencil_QAction.setEnabled(False)
+        self.beePen_rubber_QAction.setEnabled(False)
+
                 
     def freehandediting(self):
         
@@ -140,26 +144,40 @@ class beePen_gui(object):
         self.pencil_active = True
             
     
-    def toggle(self):
-        
+    def set_beepen_commands(self):
+
+        if not self.isBeePenWidgetOpen:
+            return
+
         layer = self.canvas.currentLayer()
         if layer is None:
             return
 
         #Decide whether the plugin button/menu is enabled or disabled
-        if layer.isEditable() and layer.geometryType() == QGis.Line:
-            
+        if layer.geometryType() == QGis.Line: # layer.isEditable() and
+
+            fields = layer.pendingFields()
+            field_names = [field.name() for field in fields]
+
+            if not "width" in field_names and \
+                    not "transp" in field_names and \
+                    not "color" in field_names:
+                warn(self.interface.mainWindow(),
+                     self.plugin_name,
+                     "The current active layer is not an annotation layer")
+                return
+
             self.beePen_pencil_QAction.setEnabled(True)
             self.beePen_rubber_QAction.setEnabled(True)
 
             try:  # remove any existing connection first
-                layer.editingStopped.disconnect(self.toggle)
+                layer.editingStopped.disconnect(self.set_beepen_commands)
             except TypeError:  # missing connection
                 pass
             
-            layer.editingStopped.connect(self.toggle)
+            layer.editingStopped.connect(self.set_beepen_commands)
             try:
-                layer.editingStarted.disconnect(self.toggle)
+                layer.editingStarted.disconnect(self.set_beepen_commands)
             except TypeError:  # missing connection
                 pass
 
@@ -172,14 +190,14 @@ class beePen_gui(object):
             if layer.type() == QgsMapLayer.VectorLayer and layer.geometryType() == QGis.Line:
                 
                 try:  # remove any existing connection first
-                    layer.editingStarted.disconnect(self.toggle)
+                    layer.editingStarted.disconnect(self.set_beepen_commands)
                 except TypeError:  # missing connection
                     pass
                 
-                layer.editingStarted.connect(self.toggle)
+                layer.editingStarted.connect(self.set_beepen_commands)
                 
                 try:
-                    layer.editingStopped.disconnect(self.toggle)
+                    layer.editingStopped.disconnect(self.set_beepen_commands)
                 except TypeError:  # missing connection
                     pass
  
@@ -216,7 +234,9 @@ class beePen_gui(object):
         if layer is None:
             del geom
             return
-        
+
+        layer.startEditing()
+
         fields = layer.pendingFields()   
         field_names = [field.name() for field in fields]
         
@@ -270,13 +290,11 @@ class beePen_gui(object):
         record_values = [self.beePen_QWidget.pencil_width, 
                          self.beePen_QWidget.transparency, 
                          self.beePen_QWidget.color_name]
-                         
         for ndx, value in enumerate(record_values):
             f.setAttribute(ndx, value)
-
-        layer.beginEditCommand("Feature added")
         layer.addFeature(f)
-        layer.endEditCommand()
+
+        layer.commitChanges()
         
 
     def deleteFeatures(self, geom):
