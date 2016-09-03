@@ -5,7 +5,7 @@ about=Plugin for drawing freehand lines with map-specified pen widths.
   Its applications are for field mapping. 
   It is based on the "Freehand" plugin.
 category=Vector 
-version=0.1.0
+version=0.1.1
 experimental=False
 qgisMinimumVersion=2.0
 author=Mauro Alberti, Mauro DeDonatis
@@ -23,6 +23,7 @@ changelog=
   0.0.8 : - removed bug appearing when multiple clicks on pencil tool; added eraser tool
   0.0.9 : - added sub-unit pencil widths
   0.1.0 : - removed possibility to save annotation shapefile on an existing one
+  0.1.1 : - removed prior layer editing requirement
   
 ; tags are in comma separated value format, spaces are allowed
 tags = annotation, field work, geology, mapping
