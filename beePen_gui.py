@@ -252,7 +252,6 @@ class beePen_gui(object):
         
         layerCRSSrsid = layer.crs().srsid()
         projectCRSSrsid = renderer.destinationCrs().srsid()
-        provider = layer.dataProvider()
         f = QgsFeature()
 
         if layer.crs().projectionAcronym() == "longlat":
@@ -277,7 +276,7 @@ class beePen_gui(object):
 
         f.initAttributes(fields.count())
         try:
-            assert fields.count() >= 3
+            assert fields.count() >= 2
         except:
             warn(self.interface.mainWindow(),
                  self.plugin_name,
@@ -286,6 +285,7 @@ class beePen_gui(object):
         
         record_values = [self.beePen_QWidget.pencil_width,
                          self.beePen_QWidget.color_name]
+        print "record_values: %s" % record_values
         for ndx, value in enumerate(record_values):
             f.setAttribute(ndx, value)
         layer.addFeature(f)

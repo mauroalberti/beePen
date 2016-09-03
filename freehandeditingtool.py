@@ -89,12 +89,10 @@ class FreehandEditingTool(QgsMapTool):
         self.drawing = True
         
         self.rubberband = QgsRubberBand(self.canvas)
-        
-        self.rubberband.setColor(QColor(self.color_name))
+
+        red, green, blue, alpha = map(int, self.color_name.split(","))
+        self.rubberband.setColor(QColor(red, green, blue, alpha))
         self.rubberband.setWidth(self.pencil_width * FreehandEditingTool.rubberband_conv_factor / self.canvas.scale()) # denominator is empirically-derived value
-            
-        x = event.pos().x()
-        y = event.pos().y()        
 
         point = self.toLayerCoordinates(layer, event.pos())
         pointMap = self.toMapCoordinates(layer, point)

@@ -28,13 +28,14 @@ class beePen_QWidget(QWidget):
         self.canvas = interface.mapCanvas() 
         
         self.plugin_name = plugin_name
+        self.plugin_dir = os.path.dirname(__file__)
          
         self.pen_widths = pen_widths
         self.pen_transparencies = pen_transparencies
 
         self.pencil_width = self.pen_widths[0]  
         self.transparency = self.pen_transparencies[0]
-        self.color_name = 'red'
+        self.color_name = '255,0,0,255'
            
         self.setup_gui()
           
@@ -80,9 +81,11 @@ class beePen_QWidget(QWidget):
         
         # pen color
         pen_layout.addWidget(QLabel("Color"))
+        red, green, blue, alpha = map(int, self.color_name.split(","))
         self.pencolor_QgsColorButtonV2 = QgsColorButtonV2()
-        self.pencolor_QgsColorButtonV2.setColor(QColor('red'))
+        self.pencolor_QgsColorButtonV2.setColor(QColor(red, green, blue, alpha))
         self.pencolor_QgsColorButtonV2.colorChanged['QColor'].connect(self.update_color_transparency)
+
         pen_layout.addWidget(self.pencolor_QgsColorButtonV2)
 
         pen_QGroupBox.setLayout(pen_layout)
@@ -156,16 +159,16 @@ class beePen_QWidget(QWidget):
         geom_type = ogr.wkbLineString
             
         fields_dicts = [{"name": "width", "ogr_type": ogr.OFTReal},
-                            {"name": "transp", "ogr_type": ogr.OFTInteger},
-                            {"name": "color", "ogr_type": ogr.OFTString, "width": 20},
-                            {"name": "note", "ogr_type": ogr.OFTString, "width": 100}]
+                        {"name": "color", "ogr_type": ogr.OFTString, "width": 20},
+                        {"name": "note", "ogr_type": ogr.OFTString, "width": 100}]
 
         # get project CRS information
         project_crs_osr = self.get_prjcrs_as_proj4str()
 
         shapefile_create(file_path, geom_type, fields_dicts, project_crs_osr)
         
-        annotation_layer = QgsVectorLayer(file_path, shape_name, "ogr")        
+        annotation_layer = QgsVectorLayer(file_path, shape_name, "ogr")
+        annotation_layer.loadNamedStyle(os.path.join(self.plugin_dir, "beePen_style.qml"))
         QgsMapLayerRegistry.instance().addMapLayer(annotation_layer)       
     
         info(self.main_window,
@@ -181,6 +184,7 @@ class beePen_QWidget(QWidget):
         blue = color.blue()
         transparency = 255 - int(self.transparency_QComboBox.currentText()[:-1])*2.55
         self.color_name = "%d,%d,%d,%d" % (red, green, blue, transparency)
+        print "self.color_name: %s" % self.color_name
         self.style_signal.emit("color_transp", self.color_name)
 
 
