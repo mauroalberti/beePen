@@ -15,7 +15,7 @@ class FreehandEditingTool(QgsMapTool):
     rbFinished = pyqtSignal('QgsGeometry*')
     rubberband_conv_factor = 3800  # empirical factor for adapting rubberband width to actual scale
 
-    def __init__(self, canvas, color_name, width, transparency):
+    def __init__(self, canvas, color_name, width):
         
         QgsMapTool.__init__(self, canvas)
         
@@ -27,7 +27,6 @@ class FreehandEditingTool(QgsMapTool):
         
         self.color_name = color_name
         self.pencil_width = width
-        self.transparency = transparency
 
         # our own fancy cursor
         self.cursor = QCursor(QPixmap(["16 16 3 1",
@@ -54,12 +53,10 @@ class FreehandEditingTool(QgsMapTool):
 
     def update_pen_style(self, name, parameter):
         
-        if name == "color":
+        if name == "color_transp":
             self.color_name = parameter
         elif name == "width":
             self.pencil_width = float(parameter)
-        elif name == "transparency":
-            self.transparency = int(parameter)
         else:
             warn(self.interface.mainWindow(), self.plugin_name, "Error with pen style update")
             return

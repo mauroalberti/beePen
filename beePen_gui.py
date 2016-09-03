@@ -29,6 +29,7 @@
 #
 #---------------------------------------------------------------------
 
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
@@ -50,8 +51,7 @@ class beePen_gui(object):
          
         self.pen_widths = [0.01, 0.02, 0.05, 0.08, 0.1, 0.2, 0.5, 1, 5, 10, 25, 50, 100, 250, 500, 750, 1000]
         self.pen_transparencies = [0, 25, 50, 75]
-        self.pen_colors = ["blue", "red", "yellow", "green", "orange", "violet", "pink"]
-        
+
 
     def initGui(self):
 
@@ -103,14 +103,13 @@ class beePen_gui(object):
         self.beePen_QWidget = beePen_QWidget(self.interface,
                                              self.plugin_name,
                                              self.pen_widths,
-                                             self.pen_transparencies,
-                                             self.pen_colors)
+                                             self.pen_transparencies)
         
         beePen_DockWidget.setWidget(self.beePen_QWidget)
         beePen_DockWidget.destroyed.connect(self.closeEvent)        
         self.interface.addDockWidget(Qt.BottomDockWidgetArea, beePen_DockWidget)
         
-        self.renderer = self.create_symbol_renderer()
+        #self.renderer = self.create_symbol_renderer()
                 
         self.isBeePenWidgetOpen = True
 
@@ -134,9 +133,8 @@ class beePen_gui(object):
 
         self.previous_maptool = self.canvas.mapTool()  # Save the standard map tool for restoring it at the end
         self.pencil_tool = FreehandEditingTool(self.canvas,
-                                        self.beePen_QWidget.color_name,
-                                        self.beePen_QWidget.pencil_width,                                        
-                                        self.beePen_QWidget.transparency)
+                                               self.beePen_QWidget.color_name,
+                                               self.beePen_QWidget.pencil_width)
         self.beePen_QWidget.style_signal.connect(self.pencil_tool.update_pen_style)
         self.canvas.setMapTool(self.pencil_tool)
         self.beePen_pencil_QAction.setChecked(True)
@@ -160,7 +158,6 @@ class beePen_gui(object):
             field_names = [field.name() for field in fields]
 
             if not "width" in field_names and \
-                    not "transp" in field_names and \
                     not "color" in field_names:
                 warn(self.interface.mainWindow(),
                      self.plugin_name,
@@ -201,7 +198,7 @@ class beePen_gui(object):
                 except TypeError:  # missing connection
                     pass
  
-
+    """
     def create_symbol_renderer(self):
 
         categories = []
@@ -224,6 +221,7 @@ class beePen_gui(object):
         renderer = QgsCategorizedSymbolRendererV2(expression, categories)
         
         return renderer
+    """
         
         
     def createFeature(self, geom):
@@ -241,7 +239,6 @@ class beePen_gui(object):
         field_names = [field.name() for field in fields]
         
         if not "width" in field_names and \
-           not "transp" in field_names and \
            not "color" in field_names:
             del geom
             warn(self.interface.mainWindow(),
@@ -251,7 +248,7 @@ class beePen_gui(object):
         
         renderer = self.canvas.mapRenderer()
         
-        layer.setRendererV2(self.renderer)           
+        #layer.setRendererV2(self.renderer)
         
         layerCRSSrsid = layer.crs().srsid()
         projectCRSSrsid = renderer.destinationCrs().srsid()
@@ -287,8 +284,7 @@ class beePen_gui(object):
                  "Current layer has not the required fields for annotation layer")
             return
         
-        record_values = [self.beePen_QWidget.pencil_width, 
-                         self.beePen_QWidget.transparency, 
+        record_values = [self.beePen_QWidget.pencil_width,
                          self.beePen_QWidget.color_name]
         for ndx, value in enumerate(record_values):
             f.setAttribute(ndx, value)
@@ -310,7 +306,6 @@ class beePen_gui(object):
         field_names = [field.name() for field in fields]
         
         if not "width" in field_names and \
-           not "transp" in field_names and \
            not "color" in field_names:
             del geom
             warn(self.interface.mainWindow(),
@@ -320,7 +315,7 @@ class beePen_gui(object):
         
         renderer = self.canvas.mapRenderer()
         
-        layer.setRendererV2(self.renderer)           
+        #layer.setRendererV2(self.renderer)
         
         layerCRSSrsid = layer.crs().srsid()
         projectCRSSrsid = renderer.destinationCrs().srsid()
@@ -338,8 +333,6 @@ class beePen_gui(object):
             geom.transform(QgsCoordinateTransform(projectCRSSrsid,
                                                   layerCRSSrsid))
         simpl_geom = geom.simplify(tolerance)
-        
-        provider = layer.dataProvider()
 
         for feat in layer.getFeatures():
             
@@ -379,9 +372,7 @@ class beePen_gui(object):
         self.beePen_rubber_QAction.setChecked(True)
         self.eraser_tool.rbFinished['QgsGeometry*'].connect(self.deleteFeatures)
         self.eraser_active = True
-        #
 
-        
                                
     def unload(self):
 
@@ -390,8 +381,4 @@ class beePen_gui(object):
         self.interface.digitizeToolBar().removeAction(self.beePen_rubber_QAction)
                
         self.interface.removePluginMenu(self.plugin_name, self.beePen_QAction)
-
-        
-        
-               
 

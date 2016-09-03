@@ -4,6 +4,7 @@
 import os
 from osgeo import ogr, osr
 from qgis.core import QgsVectorLayer, QgsMapLayerRegistry
+from qgis.gui import QgsColorButtonV2
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -19,7 +20,7 @@ class beePen_QWidget(QWidget):
     
     style_signal = pyqtSignal(str, str)
 
-    def __init__(self, interface, plugin_name, pen_widths, pen_transparencies, pen_colors):
+    def __init__(self, interface, plugin_name, pen_widths, pen_transparencies):
 
         super(beePen_QWidget, self).__init__() 
         
@@ -30,11 +31,10 @@ class beePen_QWidget(QWidget):
          
         self.pen_widths = pen_widths
         self.pen_transparencies = pen_transparencies
-        self.pen_colors = pen_colors
-              
-        self.color_name = self.pen_colors[0]
+
         self.pencil_width = self.pen_widths[0]  
         self.transparency = self.pen_transparencies[0]
+        self.color_name = 'red'
            
         self.setup_gui()
           
@@ -75,16 +75,16 @@ class beePen_QWidget(QWidget):
         self.transparency_QComboBox = QComboBox() 
         self.pen_transparencies_percent = [str(val)+"%" for val in self.pen_transparencies]
         self.transparency_QComboBox.insertItems(0, self.pen_transparencies_percent) 
-        self.transparency_QComboBox.currentIndexChanged['QString'].connect(self.get_current_transparency_value_choice)       
+        self.transparency_QComboBox.currentIndexChanged['QString'].connect(self.update_color_transparency)
         pen_layout.addWidget(self.transparency_QComboBox)
         
         # pen color
-        pen_layout.addWidget(QLabel("Color"))        
-        self.pen_color_QComboBox = QComboBox() 
-        self.pen_color_QComboBox.insertItems(0, self.pen_colors)
-        self.pen_color_QComboBox.currentIndexChanged['QString'].connect(self.get_current_color_name_choice)
-        pen_layout.addWidget(self.pen_color_QComboBox)
-        
+        pen_layout.addWidget(QLabel("Color"))
+        self.pencolor_QgsColorButtonV2 = QgsColorButtonV2()
+        self.pencolor_QgsColorButtonV2.setColor(QColor('red'))
+        self.pencolor_QgsColorButtonV2.colorChanged['QColor'].connect(self.update_color_transparency)
+        pen_layout.addWidget(self.pencolor_QgsColorButtonV2)
+
         pen_QGroupBox.setLayout(pen_layout)
         self.dialog_layout.addWidget(pen_QGroupBox)           
 
@@ -171,12 +171,17 @@ class beePen_QWidget(QWidget):
         info(self.main_window,
              self.plugin_name,
              "Layer created")
-        
-        
-    def get_current_color_name_choice(self):
-        
-        self.color_name = self.pen_color_QComboBox.currentText()
-        self.style_signal.emit("color", self.color_name)
+
+
+    def update_color_transparency(self):
+
+        color = self.pencolor_QgsColorButtonV2.color()
+        red = color.red()
+        green = color.green()
+        blue = color.blue()
+        transparency = 255 - int(self.transparency_QComboBox.currentText()[:-1])*2.55
+        self.color_name = "%d,%d,%d,%d" % (red, green, blue, transparency)
+        self.style_signal.emit("color_transp", self.color_name)
 
 
     def get_current_pencil_width_choice(self):
@@ -185,8 +190,5 @@ class beePen_QWidget(QWidget):
         self.style_signal.emit("width", str(self.pencil_width))
         
 
-    def get_current_transparency_value_choice(self):
-        
-        self.transparency = int(self.transparency_QComboBox.currentText()[:-1])
-        self.style_signal.emit("transparency", str(self.transparency))
+
 
