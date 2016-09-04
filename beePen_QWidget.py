@@ -23,7 +23,8 @@ class beePen_QWidget(QWidget):
     def __init__(self, interface, plugin_name, pen_widths, pen_transparencies):
 
         super(beePen_QWidget, self).__init__() 
-        
+
+        self.interface = interface
         self.main_window = interface.mainWindow()
         self.canvas = interface.mapCanvas() 
         
@@ -54,7 +55,12 @@ class beePen_QWidget(QWidget):
         create_new_QPushButton = QPushButton("Create new")  
         create_new_QPushButton.clicked.connect(self.create_annotation_layer)              
         layer_layout.addWidget(create_new_QPushButton)
-                
+
+        # style existing
+        style_current_QPushButton = QPushButton("Style selected layers")
+        style_current_QPushButton.clicked.connect(self.style_annotation_layers)
+        layer_layout.addWidget(style_current_QPushButton)
+
         layer_QGroupBox.setLayout(layer_layout)
         self.dialog_layout.addWidget(layer_QGroupBox)
         
@@ -174,6 +180,14 @@ class beePen_QWidget(QWidget):
         info(self.main_window,
              self.plugin_name,
              "Layer created")
+
+
+    def style_annotation_layers(self):
+
+        selected_layers = self.interface.legendInterface().selectedLayers()
+        for layer in selected_layers:
+            layer.loadNamedStyle(os.path.join(self.plugin_dir, "beePen_style.qml"))
+        self.canvas.refreshAllLayers()
 
 
     def update_color_transparency(self):
