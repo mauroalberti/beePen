@@ -15,12 +15,13 @@ from geosurf.geo_io import shapefile_create
 from geosurf.qgs_tools import get_on_the_fly_projection
 
 
-        
+
+
 class beePen_QWidget(QWidget):
     
     style_signal = pyqtSignal(str, str)
 
-    def __init__(self, interface, plugin_name, pen_widths, pen_transparencies):
+    def __init__(self, interface, plugin_name, pen_widths, default_pen_width, pen_transparencies, fields):
 
         super(beePen_QWidget, self).__init__() 
 
@@ -34,10 +35,12 @@ class beePen_QWidget(QWidget):
         self.pen_widths = pen_widths
         self.pen_transparencies = pen_transparencies
 
-        self.pencil_width = self.pen_widths[0]  
+        self.pencil_width = default_pen_width
         self.transparency = self.pen_transparencies[0]
         self.color_name = '255,0,0,255'
-           
+
+        self.fields = fields
+
         self.setup_gui()
           
                       
@@ -71,9 +74,11 @@ class beePen_QWidget(QWidget):
         pen_layout = QHBoxLayout()
         
         # pen width
+        default_pen_width = 1
         pen_layout.addWidget(QLabel("Width (map units)"))        
         self.pen_width_QComboBox = QComboBox()  
-        self.pen_width_QComboBox.insertItems(0, [str(width) for width in self.pen_widths])    
+        self.pen_width_QComboBox.insertItems(0, [str(width) for width in self.pen_widths])
+        self.pen_width_QComboBox.setCurrentIndex(self.pen_width_QComboBox.findText(str(self.pencil_width)))
         self.pen_width_QComboBox.currentIndexChanged['QString'].connect(self.get_current_pencil_width_choice)         
         pen_layout.addWidget(self.pen_width_QComboBox)
 
@@ -112,7 +117,6 @@ class beePen_QWidget(QWidget):
         self.dialog_layout.addWidget(help_QGroupBox)    
 
         # final settings
-                                                           
         self.setLayout(self.dialog_layout)            
         self.adjustSize()               
         self.setWindowTitle(self.plugin_name)        
@@ -126,7 +130,7 @@ class beePen_QWidget(QWidget):
         if not webbrowser.open(local_url):
             warn(self.main_window,
                  self.plugin_name,
-                 "Error with browser.\nOpen manually help/help.html")
+                 "Error with browser.\nOpen help/help.html")
 
 
     def get_prjcrs_as_proj4str(self):
@@ -163,15 +167,11 @@ class beePen_QWidget(QWidget):
              
         shape_name = file_path.split("/")[-1].split(".")[0] 
         geom_type = ogr.wkbLineString
-            
-        fields_dicts = [{"name": "width", "ogr_type": ogr.OFTReal},
-                        {"name": "color", "ogr_type": ogr.OFTString, "width": 20},
-                        {"name": "note", "ogr_type": ogr.OFTString, "width": 100}]
 
         # get project CRS information
         project_crs_osr = self.get_prjcrs_as_proj4str()
 
-        shapefile_create(file_path, geom_type, fields_dicts, project_crs_osr)
+        shapefile_create(file_path, geom_type, self.fields, project_crs_osr)
         
         annotation_layer = QgsVectorLayer(file_path, shape_name, "ogr")
         annotation_layer.loadNamedStyle(os.path.join(self.plugin_dir, "beePen_style.qml"))

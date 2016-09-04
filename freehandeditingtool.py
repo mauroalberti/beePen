@@ -235,13 +235,14 @@ class EraserTool(QgsMapTool):
         
         self.rb = QgsRubberBand(self.canvas)        
 
-        self.rb.setColor(QColor("black"))
+        self.rb.setColor(QColor("red"))
 
         x = event.pos().x()
         y = event.pos().y()        
 
         point = self.toLayerCoordinates(layer, event.pos())
         pointMap = self.toMapCoordinates(layer, point)
+
         self.rb.addPoint(pointMap)
         
 
@@ -310,4 +311,4 @@ class EraserTool(QgsMapTool):
         
         return True
     
-    
+

@@ -29,11 +29,13 @@
 #
 #---------------------------------------------------------------------
 
+from osgeo import ogr
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
-import resources
+
+import resources  # maintain this import even if PyCharm says resources is unused
 
 from beePen_QWidget import beePen_QWidget
 from qt_utils.qt_utils import warn
@@ -48,14 +50,18 @@ class beePen_gui(object):
         self.canvas = self.interface.mapCanvas()        
         self.pencil_active = False
         self.plugin_name = "beePen"        
-         
+
         self.pen_widths = [0.01, 0.02, 0.05, 0.08, 0.1, 0.2, 0.5, 1, 5, 10, 25, 50, 100, 250, 500, 750, 1000]
+        self.default_pen_width = 1
         self.pen_transparencies = [0, 25, 50, 75]
 
+        self.fields_dicts = [{"name": "width", "ogr_type": ogr.OFTReal},
+                             {"name": "color", "ogr_type": ogr.OFTString, "width": 20},
+                             {"name": "note", "ogr_type": ogr.OFTString, "width": 100}]
 
     def initGui(self):
 
-        self.isBeePenWidgetOpen = False
+        self.isbeePenOpen = False
         self.pencil_tool = None
 
         self.beePen_QAction = QAction(QIcon(":/plugins/%s/icons/icon.png" % self.plugin_name),
@@ -75,7 +81,7 @@ class beePen_gui(object):
         self.beePen_pencil_QAction.setEnabled(False)
         self.interface.digitizeToolBar().addAction(self.beePen_pencil_QAction)
 
-        self.interface.currentLayerChanged['QgsMapLayer*'].connect(self.set_beepen_commands)
+        self.interface.currentLayerChanged['QgsMapLayer*'].connect(self.setup_pencil_eraser)
         self.canvas.mapToolSet['QgsMapTool*'].connect(self.deactivate_pencil)   
         
         self.beePen_rubber_QAction = QAction(QIcon(":/plugins/%s/icons/rubber.png" % self.plugin_name),
@@ -90,7 +96,7 @@ class beePen_gui(object):
 
     def open_beePen_widget(self):
         
-        if self.isBeePenWidgetOpen:
+        if self.isbeePenOpen:
             warn(self.interface.mainWindow(),
                  self.plugin_name,
                  "%s is already open" % self.plugin_name)
@@ -103,35 +109,34 @@ class beePen_gui(object):
         self.beePen_QWidget = beePen_QWidget(self.interface,
                                              self.plugin_name,
                                              self.pen_widths,
-                                             self.pen_transparencies)
+                                             self.default_pen_width,
+                                             self.pen_transparencies,
+                                             self.fields_dicts)
         
         beePen_DockWidget.setWidget(self.beePen_QWidget)
         beePen_DockWidget.destroyed.connect(self.closeEvent)        
         self.interface.addDockWidget(Qt.BottomDockWidgetArea, beePen_DockWidget)
-        
-        #self.renderer = self.create_symbol_renderer()
-                
-        self.isBeePenWidgetOpen = True
 
-        self.set_beepen_commands()
+        self.isbeePenOpen = True
+
+        self.setup_pencil_eraser()
         
 
     def closeEvent(self):
         
-        self.isBeePenWidgetOpen = False
+        self.isbeePenOpen = False
         self.beePen_pencil_QAction.setEnabled(False)
         self.beePen_rubber_QAction.setEnabled(False)
 
                 
     def freehandediting(self):
         
-        if not self.isBeePenWidgetOpen:
+        if not self.isbeePenOpen:
             warn(self.interface.mainWindow(),
                  self.plugin_name,
                  "First launch %s" % self.plugin_name)
             return
 
-        self.previous_maptool = self.canvas.mapTool()  # Save the standard map tool for restoring it at the end
         self.pencil_tool = FreehandEditingTool(self.canvas,
                                                self.beePen_QWidget.color_name,
                                                self.beePen_QWidget.pencil_width)
@@ -141,24 +146,57 @@ class beePen_gui(object):
         self.pencil_tool.rbFinished['QgsGeometry*'].connect(self.createFeature)
         self.pencil_active = True
             
-    
-    def set_beepen_commands(self):
 
-        if not self.isBeePenWidgetOpen:
+    def isAnnotationLayer(self, layer):
+
+        # check if vector
+        if layer.type() != QgsMapLayer.VectorLayer:
+            return False
+
+        # check if is a line layer
+        if layer.geometryType() != QGis.Line:
+            return False
+
+        # check that contains required fields
+        layer_field_names = map(lambda fld: fld.name(), layer.fields())
+        expected_field_names = map(lambda rec: rec["name"], self.fields_dicts)
+        return all(map(lambda exp_field_name: exp_field_name in layer_field_names, expected_field_names))
+
+
+    def setup_pencil_eraser(self):
+
+        if not self.isbeePenOpen:
+            self.beePen_pencil_QAction.setEnabled(False)
+            self.beePen_rubber_QAction.setEnabled(False)
+        else:
+            layer = self.canvas.currentLayer()
+            if layer is None:
+                self.beePen_pencil_QAction.setEnabled(False)
+                self.beePen_rubber_QAction.setEnabled(False)
+            else:
+                if self.isAnnotationLayer(layer):
+                    self.beePen_pencil_QAction.setEnabled(True)
+                    self.beePen_rubber_QAction.setEnabled(True)
+                else:
+                    self.beePen_pencil_QAction.setEnabled(False)
+                    self.beePen_rubber_QAction.setEnabled(False)
+
+
+
+    """
+    def setup_pencil_eraser(self):
+
+        if not self.isbeePenOpen:
             return
 
         layer = self.canvas.currentLayer()
         if layer is None:
             return
 
-        #Decide whether the plugin button/menu is enabled or disabled
+        # Decide whether the plugin button/menu is enabled or disabled
         if layer.geometryType() == QGis.Line: # layer.isEditable() and
 
-            fields = layer.pendingFields()
-            field_names = [field.name() for field in fields]
-
-            if not "width" in field_names and \
-                    not "color" in field_names:
+            if not self.isAnnotationLayer(layer):
                 warn(self.interface.mainWindow(),
                      self.plugin_name,
                      "The current active layer is not an annotation layer")
@@ -168,88 +206,55 @@ class beePen_gui(object):
             self.beePen_rubber_QAction.setEnabled(True)
 
             try:  # remove any existing connection first
-                layer.editingStopped.disconnect(self.set_beepen_commands)
+                layer.editingStopped.disconnect(self.setup_pencil_eraser)
             except TypeError:  # missing connection
                 pass
-            
-            layer.editingStopped.connect(self.set_beepen_commands)
+
+            layer.editingStopped.connect(self.setup_pencil_eraser)
             try:
-                layer.editingStarted.disconnect(self.set_beepen_commands)
+                layer.editingStarted.disconnect(self.setup_pencil_eraser)
             except TypeError:  # missing connection
                 pass
 
         else:
-            
+
             self.beePen_pencil_QAction.setEnabled(False)
             self.beePen_rubber_QAction.setEnabled(False)
-            
 
             if layer.type() == QgsMapLayer.VectorLayer and layer.geometryType() == QGis.Line:
-                
-                try:  # remove any existing connection first
-                    layer.editingStarted.disconnect(self.set_beepen_commands)
-                except TypeError:  # missing connection
-                    pass
-                
-                layer.editingStarted.connect(self.set_beepen_commands)
-                
-                try:
-                    layer.editingStopped.disconnect(self.set_beepen_commands)
-                except TypeError:  # missing connection
-                    pass
- 
-    """
-    def create_symbol_renderer(self):
 
-        categories = []
-        symbols = []
-        for pen_color in self.pen_colors:
-            for pen_width in self.pen_widths:
-                for transp in self.pen_transparencies:
-                    symbol = QgsSymbolV2.defaultSymbol(QGis.Line)
-                    symbol.setColor(QColor(pen_color))
-                    symbol.setOutputUnit(QgsSymbolV2.MapUnit)
-                    symbol.setWidth(pen_width)
-                    symbol.setAlpha(1.0-(transp/100.0))
-                    symbols.append(symbol)
-                
-                    category = QgsRendererCategoryV2(pen_color + "_" + str(pen_width) + "_" + str(transp), symbol, '')
-                    categories.append(category)
-        
-        # create the renderer and assign it to a layer
-        expression =  '''concat("color", '_', "width", '_', "transp")'''
-        renderer = QgsCategorizedSymbolRendererV2(expression, categories)
-        
-        return renderer
+                try:  # remove any existing connection first
+                    layer.editingStarted.disconnect(self.setup_pencil_eraser)
+                except TypeError:  # missing connection
+                    pass
+
+                layer.editingStarted.connect(self.setup_pencil_eraser)
+
+                try:
+                    layer.editingStopped.disconnect(self.setup_pencil_eraser)
+                except TypeError:  # missing connection
+                    pass
     """
-        
-        
+
+
     def createFeature(self, geom):
-        
-        settings = QSettings()
 
         layer = self.canvas.currentLayer()
         if layer is None:
             del geom
             return
 
-        layer.startEditing()
-
-        fields = layer.pendingFields()   
-        field_names = [field.name() for field in fields]
-        
-        if not "width" in field_names and \
-           not "color" in field_names:
+        if not self.isAnnotationLayer(layer):
             del geom
             warn(self.interface.mainWindow(),
                  self.plugin_name,
                  "The current active layer is not an annotation layer")
             return
-        
+
+        layer.startEditing()
+
         renderer = self.canvas.mapRenderer()
-        
-        #layer.setRendererV2(self.renderer)
-        
+
         layerCRSSrsid = layer.crs().srsid()
         projectCRSSrsid = renderer.destinationCrs().srsid()
         f = QgsFeature()
@@ -257,6 +262,7 @@ class beePen_gui(object):
         if layer.crs().projectionAcronym() == "longlat":
             tolerance = 0.000
         else:
+            settings = QSettings()
             tolerance = settings.value("/%s/tolerance" % self.plugin_name,
                                        0.000,
                                        type=float)
@@ -266,7 +272,7 @@ class beePen_gui(object):
             geom.transform(QgsCoordinateTransform(projectCRSSrsid,
                                                   layerCRSSrsid))
         s = geom.simplify(tolerance)
-        
+
         del geom
 
         f.setGeometry(s)
@@ -275,110 +281,94 @@ class beePen_gui(object):
         fields = layer.pendingFields()
 
         f.initAttributes(fields.count())
-        try:
-            assert fields.count() >= 2
-        except:
-            warn(self.interface.mainWindow(),
-                 self.plugin_name,
-                 "Current layer has not the required fields for annotation layer")
-            return
-        
+
         record_values = [self.beePen_QWidget.pencil_width,
                          self.beePen_QWidget.color_name]
-        print "record_values: %s" % record_values
+
         for ndx, value in enumerate(record_values):
             f.setAttribute(ndx, value)
+
         layer.addFeature(f)
 
         layer.commitChanges()
-        
+
 
     def deleteFeatures(self, geom):
-        
-        settings = QSettings()
 
         layer = self.canvas.currentLayer()
         if layer is None:
             del geom
             return
-        
-        fields = layer.pendingFields()   
-        field_names = [field.name() for field in fields]
-        
-        if not "width" in field_names and \
-           not "color" in field_names:
+
+        if not self.isAnnotationLayer(layer):
             del geom
             warn(self.interface.mainWindow(),
                  self.plugin_name,
                  "The current active layer is not an annotation layer")
             return
-        
+
         renderer = self.canvas.mapRenderer()
-        
-        #layer.setRendererV2(self.renderer)
-        
+
         layerCRSSrsid = layer.crs().srsid()
         projectCRSSrsid = renderer.destinationCrs().srsid()
-        provider = layer.dataProvider()
-        f = QgsFeature()
 
         if layer.crs().projectionAcronym() == "longlat":
             tolerance = 0.000
         else:
+            settings = QSettings()
             tolerance = settings.value("/%s/tolerance" % self.plugin_name,
                                        0.000, type=float)
 
-        # on the Fly reprojection.
+        # on-the-fly reprojection
         if layerCRSSrsid != projectCRSSrsid:
             geom.transform(QgsCoordinateTransform(projectCRSSrsid,
                                                   layerCRSSrsid))
+
         simpl_geom = geom.simplify(tolerance)
 
+        # delete intersected features from layer
+        layer.startEditing()
         for feat in layer.getFeatures():
-            
             target_geom = feat.geometry()
             if target_geom.intersects(simpl_geom):
                 layer.beginEditCommand("Feature deleted")
                 layer.deleteFeature(feat.id())
-                layer.endEditCommand()                
-            else: 
-                pass
-        
-                    
-    def deactivate_pencil(self, mapTool = None):        
-                
+                layer.endEditCommand()
+        layer.commitChanges()
+
+
+    def deactivate_pencil(self, mapTool = None):
+
         if mapTool is self.pencil_tool:
             return
-        
+
         self.beePen_pencil_QAction.setChecked(False)
         if self.pencil_active:
             self.pencil_tool.rbFinished['QgsGeometry*'].disconnect(self.createFeature)
         self.pencil_active = False
- 
- 
+
+
     def erase_features(self):
-        
-        # self.deactivate_pencil()
-        
-        if not self.isBeePenWidgetOpen:
+
+        if not self.isbeePenOpen:
             warn(self.interface.mainWindow(),
                  self.plugin_name,
                  "First launch %s" % self.plugin_name)
             return
-                
+
         self.eraser_tool = EraserTool(self.canvas)
-        
+
         self.canvas.setMapTool(self.eraser_tool)
         self.beePen_rubber_QAction.setChecked(True)
         self.eraser_tool.rbFinished['QgsGeometry*'].connect(self.deleteFeatures)
         self.eraser_active = True
 
-                               
+
     def unload(self):
 
         self.interface.digitizeToolBar().removeAction(self.beePen_QAction)
         self.interface.digitizeToolBar().removeAction(self.beePen_pencil_QAction)
         self.interface.digitizeToolBar().removeAction(self.beePen_rubber_QAction)
-               
+
         self.interface.removePluginMenu(self.plugin_name, self.beePen_QAction)
 
