@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 
 import os
@@ -138,12 +137,9 @@ class beePen_QWidget(QWidget):
 
         hasOTFP, project_crs = get_on_the_fly_projection(self.canvas)
         if hasOTFP:
-            proj4_str = str(project_crs.toProj4())
-            project_crs_osr = osr.SpatialReference()
-            project_crs_osr.ImportFromProj4(proj4_str)
-            return project_crs_osr
+            return str(project_crs.toProj4())
         else:
-            return None
+            return ''
 
 
     def create_annotation_layer(self):

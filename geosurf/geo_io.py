@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 
 from __future__ import division
@@ -569,7 +568,7 @@ def shapefile_create(path, geom_type, fields_dict_list, crs=None):
     if crs is not None:
         spatialReference = osr.SpatialReference()
         spatialReference.ImportFromProj4(crs)
-        outShapelayer = outShapefile.CreateLayer("layer", geom_type, spatialReference)
+        outShapelayer = outShapefile.CreateLayer("layer", srs=spatialReference, geom_type=geom_type)
     else:
         outShapelayer = outShapefile.CreateLayer("layer", geom_type=geom_type)
 
