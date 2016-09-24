@@ -1,26 +1,41 @@
 
 
 import os
-from osgeo import ogr, osr
-from qgis.core import QgsVectorLayer, QgsMapLayerRegistry
-from qgis.gui import QgsColorButtonV2
-
+from osgeo import ogr
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-
+from qgis.core import *
+from qgis.gui import QgsColorButtonV2
 from qt_utils.qt_utils import new_file_path, lastUsedDir, setLastUsedDir, warn, info
-
 from geosurf.geo_io import shapefile_create
 from geosurf.qgs_tools import get_on_the_fly_projection
 
 
+fields_dicts = [{"name": "width", "ogr_type": ogr.OFTReal},
+                {"name": "color", "ogr_type": ogr.OFTString, "width": 20},
+                {"name": "note", "ogr_type": ogr.OFTString, "width": 100}]
+
+
+def isAnnotationLayer(layer):
+    # check if vector
+    if layer.type() != QgsMapLayer.VectorLayer:
+        return False
+
+    # check if is a line layer
+    if layer.geometryType() != QGis.Line:
+        return False
+
+    # check that contains required fields
+    layer_field_names = map(lambda fld: fld.name(), layer.fields())
+    expected_field_names = map(lambda rec: rec["name"], fields_dicts)
+    return all(map(lambda exp_field_name: exp_field_name in layer_field_names, expected_field_names))
 
 
 class beePen_QWidget(QWidget):
     
     style_signal = pyqtSignal(str, str)
 
-    def __init__(self, interface, plugin_name, pen_widths, default_pen_width, pen_transparencies, fields):
+    def __init__(self, interface, plugin_name, pen_widths, default_pen_width, pen_transparencies):
 
         super(beePen_QWidget, self).__init__() 
 
@@ -38,11 +53,8 @@ class beePen_QWidget(QWidget):
         self.transparency = self.pen_transparencies[0]
         self.color_name = '255,0,0,255'
 
-        self.fields = fields
-
         self.setup_gui()
-          
-                      
+
     def setup_gui(self): 
 
         self.dialog_layout = QHBoxLayout()        
@@ -65,13 +77,26 @@ class beePen_QWidget(QWidget):
 
         layer_QGroupBox.setLayout(layer_layout)
         self.dialog_layout.addWidget(layer_QGroupBox)
-        
-        # Pen widgets
+
+        # Note widgets
+
+        note_QGroupBox = QGroupBox(self)
+        note_QGroupBox.setTitle('Note')
+        note_layout = QHBoxLayout()
+
+        self.note_QCheckBox = QCheckBox()
+        self.note_QCheckBox.setChecked(True)
+        note_layout.addWidget(self.note_QCheckBox)
+
+        note_QGroupBox.setLayout(note_layout)
+        self.dialog_layout.addWidget(note_QGroupBox)
+
+# Pen widgets
         
         pen_QGroupBox = QGroupBox(self)
         pen_QGroupBox.setTitle('Pen')        
         pen_layout = QHBoxLayout()
-        
+
         # pen width
         default_pen_width = 1
         pen_layout.addWidget(QLabel("Width (map units)"))        
@@ -119,8 +144,7 @@ class beePen_QWidget(QWidget):
         self.setLayout(self.dialog_layout)            
         self.adjustSize()               
         self.setWindowTitle(self.plugin_name)        
-  
-  
+
     def open_help_page(self):
         
         import webbrowser
@@ -131,7 +155,6 @@ class beePen_QWidget(QWidget):
                  self.plugin_name,
                  "Error with browser.\nOpen help/help.html")
 
-
     def get_prjcrs_as_proj4str(self):
         # get project CRS information
 
@@ -140,7 +163,6 @@ class beePen_QWidget(QWidget):
             return str(project_crs.toProj4())
         else:
             return ''
-
 
     def create_annotation_layer(self):
 
@@ -167,7 +189,7 @@ class beePen_QWidget(QWidget):
         # get project CRS information
         project_crs_osr = self.get_prjcrs_as_proj4str()
 
-        shapefile_create(file_path, geom_type, self.fields, project_crs_osr)
+        shapefile_create(file_path, geom_type, fields_dicts, project_crs_osr)
         
         annotation_layer = QgsVectorLayer(file_path, shape_name, "ogr")
         annotation_layer.loadNamedStyle(os.path.join(self.plugin_dir, "beePen_style.qml"))
@@ -177,14 +199,16 @@ class beePen_QWidget(QWidget):
              self.plugin_name,
              "Layer created")
 
-
     def style_annotation_layers(self):
 
         selected_layers = self.interface.legendInterface().selectedLayers()
         for layer in selected_layers:
-            layer.loadNamedStyle(os.path.join(self.plugin_dir, "beePen_style.qml"))
-        self.canvas.refreshAllLayers()
+            if isAnnotationLayer(layer):
+                layer.loadNamedStyle(os.path.join(self.plugin_dir, "beePen_style.qml"))
+            else:
+                self.warn('Layer %s is not an annotation layer' % layer.name())
 
+        self.canvas.refreshAllLayers()
 
     def update_color_transparency(self):
 
@@ -194,14 +218,22 @@ class beePen_QWidget(QWidget):
         blue = color.blue()
         transparency = 255 - int(self.transparency_QComboBox.currentText()[:-1])*2.55
         self.color_name = "%d,%d,%d,%d" % (red, green, blue, transparency)
-        print "self.color_name: %s" % self.color_name
         self.style_signal.emit("color_transp", self.color_name)
-
 
     def get_current_pencil_width_choice(self):
         
         self.pencil_width = float(self.pen_width_QComboBox.currentText())
         self.style_signal.emit("width", str(self.pencil_width))
+
+    def info(self, msg):
+        QMessageBox.information(self, self.plugin_name, msg)
+
+    def warn(self, msg):
+        QMessageBox.warning(self, self.plugin_name, msg)
+
+    def error(self, msg):
+        QMessageBox.error(self, self.plugin_name, msg)
+
         
 
 
