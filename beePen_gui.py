@@ -162,6 +162,9 @@ class beePen_gui(object):
 
     def createFeature(self, geom):
 
+        if geom is None:
+            return
+
         layer = self.canvas.currentLayer()
         if layer is None:
             del geom
@@ -174,14 +177,12 @@ class beePen_gui(object):
                  "The current active layer is not an annotation layer")
             return
 
-        #self.beePen_pencil_QAction.triggered.disconnect(self.freehandediting)
-
-        # open note window for reading the note text
-        noteDialog = NoteDialog()
-        if noteDialog.exec_():
-            pass
-        else:
-            return
+        # open note window for inputting the note text
+        note = ''
+        if self.beePen_QWidget.note_QCheckBox.isChecked():
+            noteDialog = NoteDialog()
+            if noteDialog.exec_():
+                note = noteDialog.note_plainTextEdit.toPlainText()
 
         layer.startEditing()
 
@@ -205,18 +206,24 @@ class beePen_gui(object):
                                                   layerCRSSrsid))
         s = geom.simplify(tolerance)
         del geom
+
         f.setGeometry(s)
+
         # add attribute fields to feature
         fields = layer.pendingFields()
         f.initAttributes(fields.count())
         record_values = [self.beePen_QWidget.pencil_width,
-                         self.beePen_QWidget.color_name]
+                         self.beePen_QWidget.color_name,
+                         note]
         for ndx, value in enumerate(record_values):
             f.setAttribute(ndx, value)
         layer.addFeature(f)
         layer.commitChanges()
 
     def deleteFeatures(self, geom):
+
+        if geom is None:
+            return
 
         layer = self.canvas.currentLayer()
         if layer is None:

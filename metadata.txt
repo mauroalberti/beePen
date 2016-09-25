@@ -23,7 +23,7 @@ changelog=
   0.0.8 : - removed bug appearing when multiple clicks on pencil tool; added eraser tool
   0.0.9 : - added sub-unit pencil widths
   0.1.0 : - removed possibility to save annotation shapefile on an existing one
-  0.1.1 : - removed prior layer editing requirement
+  0.1.1 : - removed prior layer editing requirement; added color choice; added notes
   
 ; tags are in comma separated value format, spaces are allowed
 tags = annotation, field work, geology, mapping

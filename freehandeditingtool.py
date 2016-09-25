@@ -119,13 +119,15 @@ class FreehandEditingTool(QgsMapTool):
         
         if self.rubberband.numberOfVertices() > 2:
             geom = self.rubberband.asGeometry()
-            self.rbFinished.emit(geom)
+        else:
+            geom = None
 
         # reset rubberband and refresh the canvas
         self.rubberband.reset()
         self.rubberband = None
         self.canvas.refresh()
 
+        self.rbFinished.emit(geom)
 
     def setIgnoreClick(self, ignore):
         """Used to keep the tool from registering clicks during modal dialogs"""
@@ -267,12 +269,15 @@ class EraserTool(QgsMapTool):
         
         if self.rb.numberOfVertices() > 2:
             geom = self.rb.asGeometry()
-            self.rbFinished.emit(geom)
+        else:
+            geom = None
 
         # reset rubberband and refresh the canvas
         self.rb.reset()
         self.rb = None
         self.canvas.refresh()
+
+        self.rbFinished.emit(geom)
 
 
     def setIgnoreClick(self, ignore):
