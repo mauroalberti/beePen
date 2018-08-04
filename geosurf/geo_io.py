@@ -2,6 +2,11 @@
 
 from __future__ import division
 
+from builtins import map
+from builtins import zip
+from builtins import str
+from builtins import range
+from builtins import object
 import json
 import numpy as np
 import os
@@ -251,11 +256,11 @@ class GDALParameters(object):
         """
         # check if pixel size can be considered the same in the two axis directions
         if abs(abs(self._pixsizeEW) - abs(self._pixsizeNS)) / abs(self._pixsizeNS) > tolerance:
-            raise RasterParametersException, 'Pixel sizes in x and y directions are different in raster'
+            raise RasterParametersException('Pixel sizes in x and y directions are different in raster')
 
             # check for the absence of axis rotations
         if abs(self._rotation_GT_2) > tolerance or abs(self._rotation_GT_4) > tolerance:
-            raise RasterParametersException, 'There should be no axis rotation in raster'
+            raise RasterParametersException('There should be no axis rotation in raster')
 
         return
 
@@ -432,7 +437,7 @@ def geosurface_export_vtk(output_filepath, geodata):
         outfile.write('\nDATASET POLYDATA\n')
 
         outfile.write('POINTS %d float\n' % n_points)
-        for n in xrange(n_points):
+        for n in range(n_points):
             outfile.write('%.4f %.4f %.4f\n' % (X_arr[n], Y_arr[n], Z_arr[n]))
 
         outfile.write('\n')
@@ -440,9 +445,9 @@ def geosurface_export_vtk(output_filepath, geodata):
         outfile.write('TRIANGLE_STRIPS %d %d\n' % (n_cols - 1, (n_cols - 1) * (1 + n_rows * 2)))
 
         num_points_strip = n_rows * 2
-        for l in xrange(n_cols - 1):
+        for l in range(n_cols - 1):
             triangle_strip_string = "%d " % num_points_strip
-            for p in xrange(n_rows):
+            for p in range(n_rows):
                 triangle_strip_string += "%d %d " % ((l + 1) * n_rows + p, l * n_rows + p)
             triangle_strip_string += "\n"
             outfile.write(triangle_strip_string)
@@ -462,8 +467,8 @@ def geosurface_export_grass(output_filepath, geodata):
 
     with open(output_filepath, 'w') as outfile:
         outfile.write('VERTI:\n')
-        for l in xrange(n_cols - 1):
-            for p in xrange(n_rows - 1):
+        for l in range(n_cols - 1):
+            for p in range(n_rows - 1):
                 start_point_ndx = l * n_rows + p
                 forward_line_point_ndx = start_point_ndx + n_rows
                 outfile.write('F 4\n')
@@ -502,8 +507,8 @@ def geosurface_export_esri_generate(output_filepath, geodata):
     progr_id = 0
     with open(output_filepath, 'w') as outfile:
         outfile.write('VERTI:\n')
-        for l in xrange(n_cols - 1):
-            for p in xrange(n_rows - 1):
+        for l in range(n_cols - 1):
+            for p in range(n_rows - 1):
                 start_point_ndx = l * n_rows + p
                 forward_line_point_ndx = start_point_ndx + n_rows
                 progr_id += 1
@@ -563,7 +568,7 @@ def shapefile_create(path, geom_type, fields_dict_list, crs=None):
 
     outShapefile = driver.CreateDataSource(str(path))
     if outShapefile is None:
-        raise OGRIOException, 'Unable to save shapefile in provided path'
+        raise OGRIOException('Unable to save shapefile in provided path')
 
     if crs is not None:
         spatialReference = osr.SpatialReference()
@@ -572,8 +577,8 @@ def shapefile_create(path, geom_type, fields_dict_list, crs=None):
     else:
         outShapelayer = outShapefile.CreateLayer("layer", geom_type=geom_type)
 
-    map(lambda field_def_params: outShapelayer.CreateField(shapefile_create_def_field(field_def_params)),
-        fields_dict_list)
+    list(map(lambda field_def_params: outShapelayer.CreateField(shapefile_create_def_field(field_def_params)),
+        fields_dict_list))
 
     return outShapefile, outShapelayer
 
@@ -584,7 +589,7 @@ def ogr_get_solution_shapefile(path, fields_dict_list):
     dataSource = driver.Open(str(path), 0)
 
     if dataSource is None:
-        raise OGRIOException, 'Unable to open shapefile in provided path'
+        raise OGRIOException('Unable to open shapefile in provided path')
 
     point_shapelayer = dataSource.GetLayer()
 
@@ -640,7 +645,7 @@ def geosurface_read_gas_input(infile_path):
         with open(infile_path, 'r') as infile:
             input_geosurface = json.load(infile)
     except:
-        raise AnaliticSurfaceIOException, "Check input file name"
+        raise AnaliticSurfaceIOException("Check input file name")
 
     src_analytical_params = input_geosurface['analytical surface']
     src_geographical_params = input_geosurface['geographical params']
@@ -664,7 +669,7 @@ def geosurface_export_shapefile_pt3d(shapefile_path, geodata, fields_dict_list, 
     X, Y, Z = geosurface_XYZ
     assert len(X) == len(Y)
     assert len(X) == len(Z)
-    ids = range(len(X))
+    ids = list(range(len(X)))
 
-    rec_values_list2 = zip(ids, X, Y, Z)
+    rec_values_list2 = list(zip(ids, X, Y, Z))
     ogr_write_point_result(point_shapelayer, field_list, rec_values_list2)

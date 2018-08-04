@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 #-----------------------------------------------------------
 #
 #
@@ -29,17 +30,22 @@
 #
 #---------------------------------------------------------------------
 
+from builtins import object
 import os
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.uic import loadUi
+
+from qgis.PyQt.QtCore import *
+from qgis.PyQt.QtGui import *
+from qgis.PyQt.QtWidgets import *
+
+from qgis.PyQt.uic import loadUi
+
 from qgis.core import *
 
-import resources  # maintain this import even if PyCharm says resources is unused
+from . import resources  # maintain this import even if PyCharm says resources is unused
 
-from beePen_QWidget import beePen_QWidget, isAnnotationLayer
-from qt_utils.qt_utils import warn
-from freehandeditingtool import FreehandEditingTool, EraserTool
+from .beePen_QWidget import beePen_QWidget, isAnnotationLayer
+from .qt_utils.qt_utils import warn
+from .freehandeditingtool import FreehandEditingTool, EraserTool
 
 
 _plugin_name_ = "beePen"
@@ -83,7 +89,9 @@ class beePen_gui(object):
         self.interface.digitizeToolBar().addAction(self.beePen_pencil_QAction)
 
         self.interface.currentLayerChanged['QgsMapLayer*'].connect(self.setup_pencil_eraser)
-        self.canvas.mapToolSet['QgsMapTool*'].connect(self.deactivate_pencil)   
+
+        self.canvas.mapToolSet.connect(self.deactivate_pencil)
+
         
         self.beePen_rubber_QAction = QAction(QIcon(":/plugins/%s/icons/rubber.png" % self.plugin_name),
                                                    "beeRubber",
@@ -93,7 +101,6 @@ class beePen_gui(object):
         self.beePen_rubber_QAction.triggered.connect(self.erase_features)
         self.beePen_rubber_QAction.setEnabled(False)
         self.interface.digitizeToolBar().addAction(self.beePen_rubber_QAction)
-
 
     def open_beePen_widget(self):
         
@@ -137,13 +144,14 @@ class beePen_gui(object):
                  "First launch %s" % self.plugin_name)
             return
 
-        self.pencil_tool = FreehandEditingTool(self.canvas,
+        self.pencil_tool = FreehandEditingTool(self.interface,
+                                               self.canvas,
                                                self.beePen_QWidget.color_name,
                                                self.beePen_QWidget.pencil_width)
         self.beePen_QWidget.style_signal.connect(self.pencil_tool.update_pen_style)
         self.canvas.setMapTool(self.pencil_tool)
         self.beePen_pencil_QAction.setChecked(True)
-        self.pencil_tool.rbFinished['QgsGeometry*'].connect(self.createFeature)
+        self.pencil_tool.rbFinished.connect(self.createFeature)
         self.pencil_active = True
 
     def setup_pencil_eraser(self):
@@ -186,10 +194,13 @@ class beePen_gui(object):
 
         layer.startEditing()
 
-        renderer = self.canvas.mapRenderer()
+        map_settings = self.canvas.mapSettings()
 
-        layerCRSSrsid = layer.crs().srsid()
-        projectCRSSrsid = renderer.destinationCrs().srsid()
+        layer_crs = layer.crs()
+        project_crs = map_settings.destinationCrs()
+
+        layerCRSSrsid = layer_crs.srsid()
+        projectCRSSrsid = project_crs.srsid()
         f = QgsFeature()
 
         if layer.crs().projectionAcronym() == "longlat":
@@ -202,15 +213,16 @@ class beePen_gui(object):
 
         # on-the-fly re-projection.
         if layerCRSSrsid != projectCRSSrsid:
-            geom.transform(QgsCoordinateTransform(projectCRSSrsid,
-                                                  layerCRSSrsid))
+            geom.transform(QgsCoordinateTransform(project_crs,
+                                                  layer_crs,
+                                                  QgsProject.instance()))
         s = geom.simplify(tolerance)
         del geom
 
         f.setGeometry(s)
 
         # add attribute fields to feature
-        fields = layer.pendingFields()
+        fields = layer.fields()
         f.initAttributes(fields.count())
         record_values = [self.beePen_QWidget.pencil_width,
                          self.beePen_QWidget.color_name,
@@ -237,10 +249,13 @@ class beePen_gui(object):
                  "The current active layer is not an annotation layer")
             return
 
-        renderer = self.canvas.mapRenderer()
+        map_settings = self.canvas.mapSettings()
 
-        layerCRSSrsid = layer.crs().srsid()
-        projectCRSSrsid = renderer.destinationCrs().srsid()
+        layer_crs = layer.crs()
+        layerCRSSrsid = layer_crs.srsid()
+
+        project_crs = map_settings.destinationCrs()
+        projectCRSSrsid = project_crs.srsid()
 
         if layer.crs().projectionAcronym() == "longlat":
             tolerance = 0.000
@@ -251,8 +266,9 @@ class beePen_gui(object):
 
         # on-the-fly reprojection
         if layerCRSSrsid != projectCRSSrsid:
-            geom.transform(QgsCoordinateTransform(projectCRSSrsid,
-                                                  layerCRSSrsid))
+            geom.transform(QgsCoordinateTransform(project_crs,
+                                                  layer_crs,
+                                                  QgsProject.instance()))
 
         simpl_geom = geom.simplify(tolerance)
 
@@ -274,7 +290,7 @@ class beePen_gui(object):
 
         self.beePen_pencil_QAction.setChecked(False)
         if self.pencil_active:
-            self.pencil_tool.rbFinished['QgsGeometry*'].disconnect(self.createFeature)
+            self.pencil_tool.rbFinished.disconnect(self.createFeature)
         self.pencil_active = False
 
 
@@ -290,7 +306,7 @@ class beePen_gui(object):
 
         self.canvas.setMapTool(self.eraser_tool)
         self.beePen_rubber_QAction.setChecked(True)
-        self.eraser_tool.rbFinished['QgsGeometry*'].connect(self.deleteFeatures)
+        self.eraser_tool.rbFinished.connect(self.deleteFeatures)
         self.eraser_active = True
 
 

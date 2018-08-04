@@ -1,6 +1,7 @@
 from __future__ import division
 
 
+from builtins import object
 class RasterParametersException(Exception):
     """
     Exception for raster parameters.
@@ -29,7 +30,7 @@ class OutputException(Exception):
     pass
 
 
-class ConnectionException:
+class ConnectionException(object):
     pass
 
 

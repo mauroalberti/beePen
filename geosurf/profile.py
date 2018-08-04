@@ -1,5 +1,8 @@
 from __future__ import division
 
+from builtins import zip
+from builtins import map
+from builtins import object
 import numpy as np
 
 
@@ -30,7 +33,7 @@ class Profile_Elements(object):
 
     def add_intersections_lines(self, formation_list, intersection_line3d_list, intersection_polygon_s_list2):
 
-        self.intersection_lines = zip(formation_list, intersection_line3d_list, intersection_polygon_s_list2)
+        self.intersection_lines = list(zip(formation_list, intersection_line3d_list, intersection_polygon_s_list2))
 
     def get_current_dem_names(self):
 
@@ -172,14 +175,14 @@ class TopoProfiles(object):
         return self.s[-1]
 
     def min_z(self):
-        return min(map(np.nanmin, self.elevs))
+        return min(list(map(np.nanmin, self.elevs)))
 
     def max_z(self):
-        return max(map(np.nanmax, self.elevs))
+        return max(list(map(np.nanmax, self.elevs)))
 
     @property
     def absolute_slopes(self):
-        return map(np.fabs, self.dir_slopes)
+        return list(map(np.fabs, self.dir_slopes))
 
 class PlaneAttitude(object):
     def __init__(self, rec_id, source_point_3d, source_geol_plane, point_3d, slope_rad, dwnwrd_sense, sign_hor_dist):

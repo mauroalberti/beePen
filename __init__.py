@@ -20,9 +20,13 @@
  ***************************************************************************/
 """
 
-from beePen_gui import beePen_gui
+from __future__ import absolute_import
 
-def classFactory(iface):    
+from .beePen_gui import beePen_gui
+
+
+def classFactory(iface):
+
     # create qgSurf_gui class   
     return beePen_gui(iface)
 

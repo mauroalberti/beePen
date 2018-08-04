@@ -1,29 +1,34 @@
 [general]
 name=beePen
+author=Mauro Alberti, Mauro DeDonatis
+email=mauro.dedonatis@uniurb.it
+qgisMinimumVersion=3.0
 description=Allows to draw freehand lines in a layer
 about=Plugin for drawing freehand lines with map-specified pen widths.
   Its applications are for field mapping. 
   It is based on the "Freehand" plugin.
 category=Vector 
-version=0.1.1
+version=0.2.0
+homepage=https://github.com/mauroalberti/beePen
+tracker=https://github.com/mauroalberti/beePen/issues
+repository=https://github.com/mauroalberti/beePen
 experimental=False
-qgisMinimumVersion=2.0
-author=Mauro Alberti, Mauro DeDonatis
-email=mauro.dedonatis@uniurb.it
-icon=./icon.png
+icon=./icons/icon.png
 
 ; end of mandatory metadata
 
 ; start of optional metadata
 changelog=
-  0.0.4 : - first release in QGis plugin repository
-  0.0.5 : - help added 
-  0.0.6 : - pencil widths in map units, so they scale correctly with map extent 
-  0.0.7 : - removed unwanted styling on non-annotation layers 
-  0.0.8 : - removed bug appearing when multiple clicks on pencil tool; added eraser tool
-  0.0.9 : - added sub-unit pencil widths
-  0.1.0 : - removed possibility to save annotation shapefile on an existing one
-  0.1.1 : - removed prior layer editing requirement; added color choice; added notes
+    0.2.0 : - porting to QGIS 3
+    0.1.1 : - removed prior layer editing requirement; added color choice; added notes
+    0.1.0 : - removed possibility to save annotation shapefile on an existing one
+    0.0.9 : - added sub-unit pencil widths
+    0.0.8 : - removed bug appearing when multiple clicks on pencil tool; added eraser tool
+    0.0.7 : - removed unwanted styling on non-annotation layers
+    0.0.6 : - pencil widths in map units, so they scale correctly with map extent
+    0.0.5 : - help added
+    0.0.4 : - first release in QGis plugin repository
+
   
 ; tags are in comma separated value format, spaces are allowed
 tags = annotation, field work, geology, mapping
@@ -32,9 +37,6 @@ tags = annotation, field work, geology, mapping
 ; in a future version of the web application it will
 ; be probably possible to create a project on redmine
 ; if they are not filled
-homepage=https://github.com/mauroalberti/beePen
-tracker=https://github.com/mauroalberti/beePen/issues
-repository=https://github.com/mauroalberti/beePen
 
 ; deprecated flag (applies to the whole plugin and not only to the uploaded version)
 deprecated=False

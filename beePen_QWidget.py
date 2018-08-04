@@ -1,14 +1,22 @@
+from __future__ import absolute_import
 
 
+from builtins import map
+from builtins import str
 import os
 from osgeo import ogr
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+
+from qgis.PyQt.QtCore import *
+from qgis.PyQt.QtGui import *
+from qgis.PyQt.QtWidgets import *
+
 from qgis.core import *
-from qgis.gui import QgsColorButtonV2
-from qt_utils.qt_utils import new_file_path, lastUsedDir, setLastUsedDir, warn, info
-from geosurf.geo_io import shapefile_create
-from geosurf.qgs_tools import get_on_the_fly_projection
+from qgis.gui import QgsColorButton
+
+from .qt_utils.qt_utils import new_file_path, lastUsedDir, setLastUsedDir, warn, info
+
+from .geosurf.geo_io import shapefile_create
+from .geosurf.qgs_tools import get_on_the_fly_projection
 
 
 fields_dicts = [{"name": "width", "ogr_type": ogr.OFTReal},
@@ -17,18 +25,19 @@ fields_dicts = [{"name": "width", "ogr_type": ogr.OFTReal},
 
 
 def isAnnotationLayer(layer):
+
     # check if vector
     if layer.type() != QgsMapLayer.VectorLayer:
         return False
 
     # check if is a line layer
-    if layer.geometryType() != QGis.Line:
+    if layer.geometryType() != QgsWkbTypes.LineGeometry:
         return False
 
     # check that contains required fields
-    layer_field_names = map(lambda fld: fld.name(), layer.fields())
-    expected_field_names = map(lambda rec: rec["name"], fields_dicts)
-    return all(map(lambda exp_field_name: exp_field_name in layer_field_names, expected_field_names))
+    layer_field_names = [fld.name() for fld in layer.fields()]
+    expected_field_names = [rec["name"] for rec in fields_dicts]
+    return all([exp_field_name in layer_field_names for exp_field_name in expected_field_names])
 
 
 class beePen_QWidget(QWidget):
@@ -116,8 +125,8 @@ class beePen_QWidget(QWidget):
         
         # pen color
         pen_layout.addWidget(QLabel("Color"))
-        red, green, blue, alpha = map(int, self.color_name.split(","))
-        self.pencolor_QgsColorButtonV2 = QgsColorButtonV2()
+        red, green, blue, alpha = list(map(int, self.color_name.split(",")))
+        self.pencolor_QgsColorButtonV2 = QgsColorButton()
         self.pencolor_QgsColorButtonV2.setColor(QColor(red, green, blue, alpha))
         self.pencolor_QgsColorButtonV2.colorChanged['QColor'].connect(self.update_color_transparency)
 
@@ -193,7 +202,7 @@ class beePen_QWidget(QWidget):
         
         annotation_layer = QgsVectorLayer(file_path, shape_name, "ogr")
         annotation_layer.loadNamedStyle(os.path.join(self.plugin_dir, "beePen_style.qml"))
-        QgsMapLayerRegistry.instance().addMapLayer(annotation_layer)       
+        QgsProject.instance().addMapLayer(annotation_layer)
     
         info(self.main_window,
              self.plugin_name,
@@ -201,7 +210,8 @@ class beePen_QWidget(QWidget):
 
     def style_annotation_layers(self):
 
-        selected_layers = self.interface.legendInterface().selectedLayers()
+        selected_layers = self.interface.layerTreeView().selectedLayers()
+
         for layer in selected_layers:
             if isAnnotationLayer(layer):
                 layer.loadNamedStyle(os.path.join(self.plugin_dir, "beePen_style.qml"))

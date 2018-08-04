@@ -1,24 +1,32 @@
 # -*- coding: utf-8 -*-
 
-# adapted from Freehabdediting plugin
+# adapted from Freehandediting plugin
 # by Pavol Kapusta
 
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from __future__ import absolute_import
+from builtins import map
+
+from qgis.PyQt.QtCore import *
+from qgis.PyQt.QtGui import *
+from qgis.PyQt.QtWidgets import *
+
+from qgis.core import *
 from qgis.gui import *
-from qt_utils.qt_utils import warn
+
+from .qt_utils.qt_utils import warn
 
 
-class FreehandEditingTool(QgsMapTool):
+class FreehandEditingTool(QgsMapToolEmitPoint):
 
-    rbFinished = pyqtSignal('QgsGeometry*')
+    rbFinished = pyqtSignal(QgsGeometry)
     rubberband_conv_factor = 3800  # empirical factor for adapting rubberband width to actual scale
 
-    def __init__(self, canvas, color_name, width):
-        
-        QgsMapTool.__init__(self, canvas)
-        
+    def __init__(self, interface, canvas, color_name, width):
+
+        QgsMapToolEmitPoint.__init__(self, canvas)
+
+        self.interface = interface
         self.canvas = canvas
         self.rubberband = None
         self.mCtrl = None
@@ -59,38 +67,36 @@ class FreehandEditingTool(QgsMapTool):
             self.pencil_width = float(parameter)
         else:
             warn(self.interface.mainWindow(), self.plugin_name, "Error with pen style update")
-            return
-
 
     def keyPressEvent(self, event):
         
         if event.key() == Qt.Key_Control:
             self.mCtrl = True
 
-
     def keyReleaseEvent(self, event):
         
         if event.key() == Qt.Key_Control:
             self.mCtrl = False
 
-
     def canvasPressEvent(self, event):
-        
+
         if self.ignoreclick or self.drawing:
             # ignore secondary canvasPressEvents if already drag-drawing
             # NOTE: canvasReleaseEvent will still occur (ensures rb is deleted)
             # click on multi-button input device will halt drag-drawing
             return
         
-        layer = self.canvas.currentLayer()
-        if not layer:
+        layers = self.interface.layerTreeView().selectedLayers()
+        if len(layers) != 1:
             return
-        
+        else:
+            layer = layers[0]
+
         self.drawing = True
         
         self.rubberband = QgsRubberBand(self.canvas)
 
-        red, green, blue, alpha = map(int, self.color_name.split(","))
+        red, green, blue, alpha = list(map(int, self.color_name.split(",")))
         self.rubberband.setColor(QColor(red, green, blue, alpha))
         self.rubberband.setWidth(self.pencil_width * FreehandEditingTool.rubberband_conv_factor / self.canvas.scale()) # denominator is empirically-derived value
 
@@ -98,22 +104,20 @@ class FreehandEditingTool(QgsMapTool):
         pointMap = self.toMapCoordinates(layer, point)
         self.rubberband.addPoint(pointMap)
 
-
     def canvasMoveEvent(self, event):
-        
+
         if self.ignoreclick or not self.rubberband:
             return
         
         self.rubberband.addPoint(self.toMapCoordinates(event.pos()))
 
-
     def canvasReleaseEvent(self, event):
-        
+
         if self.ignoreclick:
             return
         
         self.drawing = False
-        
+
         if not self.rubberband:
             return
         
@@ -134,57 +138,47 @@ class FreehandEditingTool(QgsMapTool):
         
         self.ignoreclick = ignore
 
-
     def showSettingsWarning(self):
         
         pass
-
 
     def activate(self):
         
         mc = self.canvas
         mc.setCursor(self.cursor)        
 
-
     def deactivate_pencil(self):
         
         pass
-    
 
     def isZoomTool(self):
         
         return False
 
-
     def isTransient(self):
         
         return False
-    
 
     def isEditTool(self):
         
         return True
-    
-    
-    
-class EraserTool(QgsMapTool):
-    
 
-    rbFinished = pyqtSignal('QgsGeometry*')
+    
+class EraserTool(QgsMapToolEmitPoint):
 
+    rbFinished = pyqtSignal(QgsGeometry)
 
-    def __init__(self, canvas):
-        
-        
-        QgsMapTool.__init__(self, canvas)
-        
+    def __init__(self, interface, canvas):
+
+        QgsMapToolEmitPoint.__init__(self, canvas)
+
+        self.interface = interface
         self.canvas = canvas
         self.rb = None
         self.mCtrl = None
-        self.drawing = False
+        self.drawing = True
         self.ignoreclick = False
-        
-        
+
         #our own fancy cursor
         self.cursor = QCursor(QPixmap(["16 16 3 1",
                                        "      c None",
@@ -214,12 +208,10 @@ class EraserTool(QgsMapTool):
         if event.key() == Qt.Key_Control:
             self.mCtrl = True
 
-
     def keyReleaseEvent(self, event):
         
         if event.key() == Qt.Key_Control:
             self.mCtrl = False
-
 
     def canvasPressEvent(self, event):
         
@@ -229,10 +221,12 @@ class EraserTool(QgsMapTool):
             # click on multi-button input device will halt drag-drawing
             return
         
-        layer = self.canvas.currentLayer()
-        if not layer:
+        layers = self.interface.layerTreeView().selectedLayers()
+        if len(layers) != 1:
             return
-        
+        else:
+            layer = layers[0]
+
         self.drawing = True
         
         self.rb = QgsRubberBand(self.canvas)        
@@ -246,8 +240,6 @@ class EraserTool(QgsMapTool):
         pointMap = self.toMapCoordinates(layer, point)
 
         self.rb.addPoint(pointMap)
-        
-
 
     def canvasMoveEvent(self, event):
         
@@ -255,7 +247,6 @@ class EraserTool(QgsMapTool):
             return
         
         self.rb.addPoint(self.toMapCoordinates(event.pos()))
-
 
     def canvasReleaseEvent(self, event):
         
@@ -279,41 +270,33 @@ class EraserTool(QgsMapTool):
 
         self.rbFinished.emit(geom)
 
-
     def setIgnoreClick(self, ignore):
         """Used to keep the tool from registering clicks during modal dialogs"""
         
         self.ignoreclick = ignore
 
-
     def showSettingsWarning(self):
         
         pass
-
 
     def activate(self):
         
         mc = self.canvas
         mc.setCursor(self.cursor)        
 
-
     def deactivate_pencil(self):
         
         pass
-    
 
     def isZoomTool(self):
         
         return False
 
-
     def isTransient(self):
         
         return False
-    
 
     def isEditTool(self):
         
         return True
-    
 

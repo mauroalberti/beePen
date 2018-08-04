@@ -1,7 +1,8 @@
 
 
-from PyQt4.QtCore import QSettings, QFileInfo
-from PyQt4.QtGui import QFileDialog, QMessageBox
+from builtins import str
+from qgis.PyQt.QtCore import QSettings, QFileInfo
+from qgis.PyQt.QtWidgets import QFileDialog, QMessageBox
 
 
 # from module RASTERCALC by Barry Rowlingson
@@ -17,7 +18,7 @@ def setLastUsedDir(plugin_name, lastDir):
 
 
 def new_file_path(parent, show_msg, path, filter_text):
-    output_filename = QFileDialog.getSaveFileName(parent,
+    output_filename, __ = QFileDialog.getSaveFileName(parent,
                                                   show_msg,
                                                   path,
                                                   filter_text)
@@ -28,7 +29,7 @@ def new_file_path(parent, show_msg, path, filter_text):
 
 
 def old_file_path(parent, show_msg, filter_extension, filter_text):
-    input_filename = QFileDialog.getOpenFileName(parent,
+    input_filename, __ = QFileDialog.getOpenFileName(parent,
                                                  parent.tr(show_msg),
                                                  filter_extension,
                                                  filter_text)

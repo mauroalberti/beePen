@@ -1,5 +1,6 @@
 from __future__ import division
 
+from builtins import object
 from math import sqrt, radians, sin, cos
 
 from .spatial import CartesianPoint3DT
