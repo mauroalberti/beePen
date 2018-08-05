@@ -155,14 +155,9 @@ class beePen_QWidget(QWidget):
         self.setWindowTitle(self.plugin_name)        
 
     def open_help_page(self):
-        
-        import webbrowser
-        local_url = os.path.dirname(os.path.realpath(__file__)) + os.sep + "help" + os.sep + "help.html"
-        local_url = local_url.replace("\\","/")
-        if not webbrowser.open(local_url):
-            warn(self.main_window,
-                 self.plugin_name,
-                 "Error with browser.\nOpen help/help.html")
+
+        dialog = HelpDialog()
+        dialog.exec_()
 
     def get_prjcrs_as_proj4str(self):
         # get project CRS information
@@ -245,6 +240,26 @@ class beePen_QWidget(QWidget):
         QMessageBox.error(self, self.plugin_name, msg)
 
         
+class HelpDialog(QDialog):
+
+    def __init__(self, parent=None):
+
+        super(HelpDialog, self).__init__(parent)
+
+        layout = QVBoxLayout()
+
+        # About section
+
+        helpTextBrwsr = QTextBrowser(self)
+
+        helpTextBrwsr.setSource(QUrl('{}/help/help.html'.format(os.path.dirname(__file__))))
+        helpTextBrwsr.setSearchPaths(['{}/help'.format(os.path.dirname(__file__))])
+
+        layout.addWidget(helpTextBrwsr)
+
+        self.setLayout(layout)
+
+        self.setWindowTitle("beePen Help")
 
 
 

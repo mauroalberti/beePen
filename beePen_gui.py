@@ -302,7 +302,7 @@ class beePen_gui(object):
                  "First launch %s" % self.plugin_name)
             return
 
-        self.eraser_tool = EraserTool(self.canvas)
+        self.eraser_tool = EraserTool(self.interface, self.canvas)
 
         self.canvas.setMapTool(self.eraser_tool)
         self.beePen_rubber_QAction.setChecked(True)
