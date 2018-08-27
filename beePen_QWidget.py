@@ -156,7 +156,7 @@ class beePen_QWidget(QWidget):
 
     def open_help_page(self):
 
-        dialog = HelpDialog()
+        dialog = HelpDialog(self.plugin_name)
         dialog.exec_()
 
     def get_prjcrs_as_proj4str(self):
@@ -242,7 +242,7 @@ class beePen_QWidget(QWidget):
         
 class HelpDialog(QDialog):
 
-    def __init__(self, parent=None):
+    def __init__(self, plugin_nm, parent=None):
 
         super(HelpDialog, self).__init__(parent)
 
@@ -252,14 +252,15 @@ class HelpDialog(QDialog):
 
         helpTextBrwsr = QTextBrowser(self)
 
-        helpTextBrwsr.setSource(QUrl('{}/help/help.html'.format(os.path.dirname(__file__))))
+        url_path = "file:///{}/help/help.html".format(os.path.dirname(__file__))
+        helpTextBrwsr.setSource(QUrl(url_path))
         helpTextBrwsr.setSearchPaths(['{}/help'.format(os.path.dirname(__file__))])
 
         layout.addWidget(helpTextBrwsr)
 
         self.setLayout(layout)
 
-        self.setWindowTitle("beePen Help")
+        self.setWindowTitle("{} Help".format(plugin_nm))
 
 
 

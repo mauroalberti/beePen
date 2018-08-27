@@ -5,7 +5,7 @@
  annotation tools for field work
                               -------------------
         begin                : 2015.03.08
-        copyright            : (C) 2015 Mauro DeDonatis
+        copyright            : (C) 2015-2018 Mauro DeDonatis
         email                : mauro.dedonatis@uniurb.it
         
  ***************************************************************************/

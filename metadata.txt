@@ -8,7 +8,7 @@ about=Plugin for drawing freehand lines with map-specified pen widths.
   Its applications are for field mapping. 
   It is based on the "Freehand" plugin.
 category=Vector 
-version=0.2.0
+version=0.2.1
 homepage=https://github.com/mauroalberti/beePen
 tracker=https://github.com/mauroalberti/beePen/issues
 repository=https://github.com/mauroalberti/beePen
@@ -19,6 +19,7 @@ icon=./icons/icon.png
 
 ; start of optional metadata
 changelog=
+    0.2.1 : - fixed Help bug for Windows
     0.2.0 : - porting to QGIS 3
     0.1.1 : - removed prior layer editing requirement; added color choice; added notes
     0.1.0 : - removed possibility to save annotation shapefile on an existing one
