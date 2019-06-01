@@ -8,10 +8,13 @@ from qgis.PyQt.QtWidgets import QFileDialog, QMessageBox
 # from module RASTERCALC by Barry Rowlingson
 
 def lastUsedDir(plugin_name):
+
     settings = QSettings()
     return settings.value("/%s/lastDir" % plugin_name, "", type=str)
 
+
 def setLastUsedDir(plugin_name, lastDir):
+
     path = QFileInfo(lastDir).absolutePath()
     settings = QSettings()
     settings.setValue("/%s/lastDir" % plugin_name, str(path))

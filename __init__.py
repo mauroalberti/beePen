@@ -27,7 +27,8 @@ from .beePen_gui import beePen_gui
 
 def classFactory(iface):
 
-    # create qgSurf_gui class   
+    # create qgSurf_gui class
+
     return beePen_gui(iface)
 
 

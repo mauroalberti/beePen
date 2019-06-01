@@ -9,6 +9,7 @@ from osgeo import ogr
 from qgis.PyQt.QtCore import *
 from qgis.PyQt.QtGui import *
 from qgis.PyQt.QtWidgets import *
+from qgis.PyQt.uic import loadUi
 
 from qgis.core import *
 from qgis.gui import QgsColorButton
@@ -44,7 +45,7 @@ class beePen_QWidget(QWidget):
     
     style_signal = pyqtSignal(str, str)
 
-    def __init__(self, interface, plugin_name, pen_widths, default_pen_width, pen_transparencies):
+    def __init__(self, interface, plugin_name, plugin_dirpth, pen_widths, default_pen_width, pen_transparencies):
 
         super(beePen_QWidget, self).__init__() 
 
@@ -53,7 +54,7 @@ class beePen_QWidget(QWidget):
         self.canvas = interface.mapCanvas() 
         
         self.plugin_name = plugin_name
-        self.plugin_dir = os.path.dirname(__file__)
+        self.plugin_dirpth = plugin_dirpth
          
         self.pen_widths = pen_widths
         self.pen_transparencies = pen_transparencies
@@ -100,13 +101,14 @@ class beePen_QWidget(QWidget):
         note_QGroupBox.setLayout(note_layout)
         self.dialog_layout.addWidget(note_QGroupBox)
 
-# Pen widgets
+        # Pen widgets
         
         pen_QGroupBox = QGroupBox(self)
         pen_QGroupBox.setTitle('Pen')        
         pen_layout = QHBoxLayout()
 
         # pen width
+
         default_pen_width = 1
         pen_layout.addWidget(QLabel("Width (map units)"))        
         self.pen_width_QComboBox = QComboBox()  
@@ -116,7 +118,8 @@ class beePen_QWidget(QWidget):
         pen_layout.addWidget(self.pen_width_QComboBox)
 
         # transparency
-        pen_layout.addWidget(QLabel("Transp."))        
+
+        pen_layout.addWidget(QLabel("Transp."))
         self.transparency_QComboBox = QComboBox() 
         self.pen_transparencies_percent = [str(val)+"%" for val in self.pen_transparencies]
         self.transparency_QComboBox.insertItems(0, self.pen_transparencies_percent) 
@@ -124,6 +127,7 @@ class beePen_QWidget(QWidget):
         pen_layout.addWidget(self.transparency_QComboBox)
         
         # pen color
+
         pen_layout.addWidget(QLabel("Color"))
         red, green, blue, alpha = list(map(int, self.color_name.split(",")))
         self.pencolor_QgsColorButtonV2 = QgsColorButton()
@@ -131,6 +135,10 @@ class beePen_QWidget(QWidget):
         self.pencolor_QgsColorButtonV2.colorChanged['QColor'].connect(self.update_color_transparency)
 
         pen_layout.addWidget(self.pencolor_QgsColorButtonV2)
+
+        line_advanced_QPushButton = QPushButton("Advanced parameters")
+        line_advanced_QPushButton.clicked.connect(self.open_advanced_form)
+        pen_layout.addWidget(line_advanced_QPushButton)
 
         pen_QGroupBox.setLayout(pen_layout)
         self.dialog_layout.addWidget(pen_QGroupBox)           
@@ -142,7 +150,8 @@ class beePen_QWidget(QWidget):
         help_layout = QHBoxLayout()
         
         # help button
-        help_QPushButton = QPushButton("Help")  
+
+        help_QPushButton = QPushButton("Help")
         help_QPushButton.clicked.connect(self.open_help_page)              
         help_layout.addWidget(help_QPushButton)
                 
@@ -150,9 +159,24 @@ class beePen_QWidget(QWidget):
         self.dialog_layout.addWidget(help_QGroupBox)    
 
         # final settings
-        self.setLayout(self.dialog_layout)            
+
+        self.setLayout(self.dialog_layout)
         self.adjustSize()               
         self.setWindowTitle(self.plugin_name)        
+
+    def open_advanced_form(self):
+
+        lineDialog = LineDialog(self.plugin_dirpth)
+
+        if lineDialog.exec_():
+
+            self.simplify_tolerance = lineDialog.simplify_tolerance.value()
+            self.smooth_iterations = lineDialog.smooth_iterations.value()
+            self.smooth_offset = lineDialog.smooth_offset.value()
+            self.smooth_mindistance = lineDialog.smooth_mindistance.value()
+            self.smooth_maxangle = lineDialog.smooth_maxangle.value()
+
+            # TODO: store values in QSettings
 
     def open_help_page(self):
 
@@ -196,7 +220,7 @@ class beePen_QWidget(QWidget):
         shapefile_create(file_path, geom_type, fields_dicts, project_crs_osr)
         
         annotation_layer = QgsVectorLayer(file_path, shape_name, "ogr")
-        annotation_layer.loadNamedStyle(os.path.join(self.plugin_dir, "beePen_style.qml"))
+        annotation_layer.loadNamedStyle(os.path.join(self.plugin_dirpth, "beePen_style.qml"))
         QgsProject.instance().addMapLayer(annotation_layer)
     
         info(self.main_window,
@@ -209,7 +233,7 @@ class beePen_QWidget(QWidget):
 
         for layer in selected_layers:
             if isAnnotationLayer(layer):
-                layer.loadNamedStyle(os.path.join(self.plugin_dir, "beePen_style.qml"))
+                layer.loadNamedStyle(os.path.join(self.plugin_dirpth, "beePen_style.qml"))
             else:
                 self.warn('Layer %s is not an annotation layer' % layer.name())
 
@@ -239,7 +263,16 @@ class beePen_QWidget(QWidget):
     def error(self, msg):
         QMessageBox.error(self, self.plugin_name, msg)
 
-        
+
+class LineDialog(QDialog):
+
+    def __init__(self, dialog_dirpth):
+
+        super(LineDialog, self).__init__()
+        loadUi(os.path.join(dialog_dirpth, 'dialog_line.ui'), self)
+        self.show()
+
+
 class HelpDialog(QDialog):
 
     def __init__(self, plugin_nm, parent=None):

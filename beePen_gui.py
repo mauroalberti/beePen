@@ -41,7 +41,7 @@ from qgis.PyQt.uic import loadUi
 
 from qgis.core import *
 
-from . import resources  # maintain this import even if PyCharm says resources is unused
+from . import resources  # Note: maintain even if it is reported as unused
 
 from .beePen_QWidget import beePen_QWidget, isAnnotationLayer
 from .qt_utils.qt_utils import warn
@@ -59,29 +59,31 @@ class beePen_gui(object):
         self.interface = interface
         self.canvas = self.interface.mapCanvas()        
         self.pencil_active = False
-        self.plugin_name = "beePen"        
+        self.plugin_name = _plugin_name_
+        self.plugin_dir_pth = _plugin_directory_
 
         self.pen_widths = [0.01, 0.02, 0.05, 0.08, 0.1, 0.2, 0.5, 1, 5, 10, 25, 50, 100, 250, 500, 750, 1000]
         self.default_pen_width = 1
         self.pen_transparencies = [0, 25, 50, 75]
-
 
     def initGui(self):
 
         self.isbeePenOpen = False
         self.pencil_tool = None
 
-        self.beePen_QAction = QAction(QIcon(":/plugins/%s/icons/icon.png" % self.plugin_name),
-                                            self.plugin_name,
-                                            self.interface.mainWindow())
+        self.beePen_QAction = QAction(
+            QIcon(":/plugins/%s/icons/icon.png" % self.plugin_name),
+            self.plugin_name,
+            self.interface.mainWindow())
         self.beePen_QAction.setWhatsThis("Graphic annotations for field work") 
         self.beePen_QAction.triggered.connect(self.open_beePen_widget)
         self.interface.addPluginToMenu(self.plugin_name, self.beePen_QAction)
         self.interface.digitizeToolBar().addAction(self.beePen_QAction)
         
-        self.beePen_pencil_QAction = QAction(QIcon(":/plugins/%s/icons/pencil.png" % self.plugin_name),
-                                                   "beePencil",
-                                                   self.interface.mainWindow())
+        self.beePen_pencil_QAction = QAction(
+            QIcon(":/plugins/%s/icons/pencil.png" % self.plugin_name),
+            "beePencil",
+            self.interface.mainWindow())
         self.beePen_pencil_QAction.setWhatsThis("Pencil for graphic annotations") 
         self.beePen_pencil_QAction.setToolTip("Pencil tool for %s" % self.plugin_name)
         self.beePen_pencil_QAction.triggered.connect(self.freehandediting)
@@ -92,10 +94,10 @@ class beePen_gui(object):
 
         self.canvas.mapToolSet.connect(self.deactivate_pencil)
 
-        
-        self.beePen_rubber_QAction = QAction(QIcon(":/plugins/%s/icons/rubber.png" % self.plugin_name),
-                                                   "beeRubber",
-                                                   self.interface.mainWindow())
+        self.beePen_rubber_QAction = QAction(
+            QIcon(":/plugins/%s/icons/rubber.png" % self.plugin_name),
+            "beeRubber",
+            self.interface.mainWindow())
         self.beePen_rubber_QAction.setWhatsThis("Rubber for graphic annotations") 
         self.beePen_rubber_QAction.setToolTip("Rubber tool for %s" % self.plugin_name)
         self.beePen_rubber_QAction.triggered.connect(self.erase_features)
@@ -114,11 +116,13 @@ class beePen_gui(object):
         beePen_DockWidget.setAttribute(Qt.WA_DeleteOnClose)
         beePen_DockWidget.setAllowedAreas(Qt.BottomDockWidgetArea | Qt.TopDockWidgetArea)
 
-        self.beePen_QWidget = beePen_QWidget(self.interface,
-                                             self.plugin_name,
-                                             self.pen_widths,
-                                             self.default_pen_width,
-                                             self.pen_transparencies)
+        self.beePen_QWidget = beePen_QWidget(
+            self.interface,
+            self.plugin_name,
+            self.plugin_dir_pth,
+            self.pen_widths,
+            self.default_pen_width,
+            self.pen_transparencies)
         
         beePen_DockWidget.setWidget(self.beePen_QWidget)
         beePen_DockWidget.destroyed.connect(self.closeEvent)        
@@ -127,7 +131,6 @@ class beePen_gui(object):
         self.isbeePenOpen = True
 
         self.setup_pencil_eraser()
-        
 
     def closeEvent(self):
         
@@ -135,7 +138,6 @@ class beePen_gui(object):
         self.beePen_pencil_QAction.setEnabled(False)
         self.beePen_rubber_QAction.setEnabled(False)
 
-                
     def freehandediting(self):
         
         if not self.isbeePenOpen:
@@ -144,10 +146,12 @@ class beePen_gui(object):
                  "First launch %s" % self.plugin_name)
             return
 
-        self.pencil_tool = FreehandEditingTool(self.interface,
-                                               self.canvas,
-                                               self.beePen_QWidget.color_name,
-                                               self.beePen_QWidget.pencil_width)
+        self.pencil_tool = FreehandEditingTool(
+            self.interface,
+            self.canvas,
+            self.beePen_QWidget.color_name,
+            self.beePen_QWidget.pencil_width
+        )
         self.beePen_QWidget.style_signal.connect(self.pencil_tool.update_pen_style)
         self.canvas.setMapTool(self.pencil_tool)
         self.beePen_pencil_QAction.setChecked(True)
@@ -186,6 +190,7 @@ class beePen_gui(object):
             return
 
         # open note window for inputting the note text
+
         note = ''
         if self.beePen_QWidget.note_QCheckBox.isChecked():
             noteDialog = NoteDialog()
@@ -211,7 +216,8 @@ class beePen_gui(object):
                                        0.000,
                                        type=float)
 
-        # on-the-fly re-projection.
+        # on-the-fly re-projection
+
         if layerCRSSrsid != projectCRSSrsid:
             geom.transform(QgsCoordinateTransform(project_crs,
                                                   layer_crs,
@@ -222,6 +228,7 @@ class beePen_gui(object):
         f.setGeometry(s)
 
         # add attribute fields to feature
+
         fields = layer.fields()
         f.initAttributes(fields.count())
         record_values = [self.beePen_QWidget.pencil_width,
@@ -282,7 +289,6 @@ class beePen_gui(object):
                 layer.endEditCommand()
         layer.commitChanges()
 
-
     def deactivate_pencil(self, mapTool = None):
 
         if mapTool is self.pencil_tool:
@@ -292,7 +298,6 @@ class beePen_gui(object):
         if self.pencil_active:
             self.pencil_tool.rbFinished.disconnect(self.createFeature)
         self.pencil_active = False
-
 
     def erase_features(self):
 
@@ -309,7 +314,6 @@ class beePen_gui(object):
         self.eraser_tool.rbFinished.connect(self.deleteFeatures)
         self.eraser_active = True
 
-
     def unload(self):
 
         self.interface.digitizeToolBar().removeAction(self.beePen_QAction)
@@ -317,7 +321,6 @@ class beePen_gui(object):
         self.interface.digitizeToolBar().removeAction(self.beePen_rubber_QAction)
 
         self.interface.removePluginMenu(self.plugin_name, self.beePen_QAction)
-
 
 
 class NoteDialog(QDialog):
