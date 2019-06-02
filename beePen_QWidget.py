@@ -166,7 +166,18 @@ class beePen_QWidget(QWidget):
 
     def open_advanced_form(self):
 
-        lineDialog = LineDialog(self.plugin_dirpth)
+        settings = QSettings()
+        geom_settings = dict(
+            simplify_tolerance=settings.value("/%s/simplify_tolerance" % self.plugin_name, 0.0, type=float),
+            smooth_iterations=settings.value("/%s/smooth_iterations" % self.plugin_name, 0, type=int),
+            smooth_offset=settings.value("/%s/smooth_offset" % self.plugin_name, 0.25, type=float),
+            smooth_mindistance=settings.value("/%s/smooth_mindistance" % self.plugin_name, -1.0, type=float),
+            smooth_maxangle=settings.value("/%s/smooth_maxangle" % self.plugin_name, 180.0, type=float)
+        )
+        lineDialog = LineDialog(
+            self.plugin_dirpth,
+            geom_settings
+        )
 
         if lineDialog.exec_():
 
@@ -176,7 +187,14 @@ class beePen_QWidget(QWidget):
             self.smooth_mindistance = lineDialog.smooth_mindistance.value()
             self.smooth_maxangle = lineDialog.smooth_maxangle.value()
 
-            # TODO: store values in QSettings
+            # store values in QSettings
+
+            settings = QSettings()
+            settings.setValue("/%s/simplify_tolerance" % self.plugin_name, self.simplify_tolerance)
+            settings.setValue("/%s/smooth_iterations" % self.plugin_name, self.smooth_iterations)
+            settings.setValue("/%s/smooth_offset" % self.plugin_name, self.smooth_offset)
+            settings.setValue("/%s/smooth_mindistance" % self.plugin_name, self.smooth_mindistance)
+            settings.setValue("/%s/smooth_maxangle" % self.plugin_name, self.smooth_maxangle)
 
     def open_help_page(self):
 
@@ -266,10 +284,17 @@ class beePen_QWidget(QWidget):
 
 class LineDialog(QDialog):
 
-    def __init__(self, dialog_dirpth):
+    def __init__(self, dialog_dirpth, config):
 
         super(LineDialog, self).__init__()
-        loadUi(os.path.join(dialog_dirpth, 'dialog_line.ui'), self)
+        self.ui = loadUi(os.path.join(dialog_dirpth, 'dialog_line.ui'), self)
+
+        self.ui.simplify_tolerance.setValue(config["simplify_tolerance"])
+        self.ui.smooth_iterations.setValue(config["smooth_iterations"])
+        self.ui.smooth_offset.setValue(config["smooth_offset"])
+        self.ui.smooth_mindistance.setValue(config["smooth_mindistance"])
+        self.ui.smooth_maxangle.setValue(config["smooth_maxangle"])
+
         self.show()
 
 
