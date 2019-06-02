@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>291</width>
-    <height>430</height>
+    <width>344</width>
+    <height>459</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,8 +16,8 @@
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>30</x>
-     <y>360</y>
+     <x>50</x>
+     <y>410</y>
      <width>191</width>
      <height>32</height>
     </rect>
@@ -32,8 +32,8 @@
   <widget class="QDoubleSpinBox" name="simplify_tolerance">
    <property name="geometry">
     <rect>
-     <x>171</x>
-     <y>70</y>
+     <x>200</x>
+     <y>133</y>
      <width>71</width>
      <height>32</height>
     </rect>
@@ -45,8 +45,8 @@
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>31</x>
-     <y>30</y>
+     <x>60</x>
+     <y>93</y>
      <width>141</width>
      <height>18</height>
     </rect>
@@ -69,8 +69,8 @@
   <widget class="QLabel" name="label_2">
    <property name="geometry">
     <rect>
-     <x>31</x>
-     <y>130</y>
+     <x>60</x>
+     <y>187</y>
      <width>141</width>
      <height>18</height>
     </rect>
@@ -93,8 +93,8 @@
   <widget class="QLabel" name="label_3">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>77</y>
+     <x>69</x>
+     <y>140</y>
      <width>60</width>
      <height>18</height>
     </rect>
@@ -106,8 +106,8 @@
   <widget class="QSpinBox" name="smooth_iterations">
    <property name="geometry">
     <rect>
-     <x>171</x>
-     <y>169</y>
+     <x>200</x>
+     <y>226</y>
      <width>71</width>
      <height>32</height>
     </rect>
@@ -115,15 +115,12 @@
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of smoothing iterations to run. More iterations results in a smoother geometry&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
-   <property name="value">
-    <number>1</number>
-   </property>
   </widget>
   <widget class="QLabel" name="label_4">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>176</y>
+     <x>69</x>
+     <y>233</y>
      <width>60</width>
      <height>18</height>
     </rect>
@@ -138,8 +135,8 @@
   <widget class="QLabel" name="label_5">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>214</y>
+     <x>69</x>
+     <y>271</y>
      <width>38</width>
      <height>18</height>
     </rect>
@@ -154,8 +151,8 @@
   <widget class="QDoubleSpinBox" name="smooth_offset">
    <property name="geometry">
     <rect>
-     <x>171</x>
-     <y>207</y>
+     <x>200</x>
+     <y>264</y>
      <width>71</width>
      <height>32</height>
     </rect>
@@ -176,8 +173,8 @@
   <widget class="QDoubleSpinBox" name="smooth_mindistance">
    <property name="geometry">
     <rect>
-     <x>171</x>
-     <y>245</y>
+     <x>200</x>
+     <y>302</y>
      <width>71</width>
      <height>32</height>
     </rect>
@@ -195,8 +192,8 @@
   <widget class="QLabel" name="label_6">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>252</y>
+     <x>69</x>
+     <y>309</y>
      <width>114</width>
      <height>18</height>
     </rect>
@@ -211,8 +208,8 @@
   <widget class="QLabel" name="label_7">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>290</y>
+     <x>69</x>
+     <y>347</y>
      <width>99</width>
      <height>18</height>
     </rect>
@@ -227,8 +224,8 @@
   <widget class="QDoubleSpinBox" name="smooth_maxangle">
    <property name="geometry">
     <rect>
-     <x>171</x>
-     <y>283</y>
+     <x>200</x>
+     <y>340</y>
      <width>71</width>
      <height>32</height>
     </rect>
@@ -241,6 +238,40 @@
    </property>
    <property name="value">
     <double>180.000000000000000</double>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_8">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>701</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>11</pointsize>
+     <weight>75</weight>
+     <italic>true</italic>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>Line smoothing parameters </string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_9">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>50</y>
+     <width>321</width>
+     <height>18</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>(work only for projected layers, i.e. not in lat-long)</string>
    </property>
   </widget>
  </widget>

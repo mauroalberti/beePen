@@ -206,37 +206,61 @@ class beePen_gui(object):
 
         layerCRSSrsid = layer_crs.srsid()
         projectCRSSrsid = project_crs.srsid()
-        f = QgsFeature()
-
-        if layer.crs().projectionAcronym() == "longlat":
-            tolerance = 0.000
-        else:
-            settings = QSettings()
-            tolerance = settings.value("/%s/tolerance" % self.plugin_name,
-                                       0.000,
-                                       type=float)
+        feature = QgsFeature()
 
         # on-the-fly re-projection
 
         if layerCRSSrsid != projectCRSSrsid:
-            geom.transform(QgsCoordinateTransform(project_crs,
-                                                  layer_crs,
-                                                  QgsProject.instance()))
-        s = geom.simplify(tolerance)
-        del geom
+            geom.transform(
+                QgsCoordinateTransform(
+                    project_crs,
+                    layer_crs,
+                    QgsProject.instance()))
 
-        f.setGeometry(s)
+        # simplification and smoothing section
+
+        settings = QSettings()
+        simplify_tolerance=settings.value("/%s/simplify_tolerance" % self.plugin_name, 0.0, type=float)
+        smooth_iterations=settings.value("/%s/smooth_iterations" % self.plugin_name, 0, type=int)
+        smooth_offset=settings.value("/%s/smooth_offset" % self.plugin_name, 0.25, type=float)
+        smooth_mindistance=settings.value("/%s/smooth_mindistance" % self.plugin_name, -1.0, type=float)
+        smooth_maxangle=settings.value("/%s/smooth_maxangle" % self.plugin_name, 180.0, type=float)
+
+        # let the feature unchanged when CRS is in polar coordinates
+
+        if layer.crs().projectionAcronym() == "longlat":
+            simplify_tolerance = 0.0
+            smooth_iterations = 0
+
+        if simplify_tolerance:
+            s = geom.simplify(simplify_tolerance)
+        else:
+            s = geom
+
+        if smooth_iterations:
+            s = s.smooth(
+                iterations=smooth_iterations,
+                offset=smooth_offset,
+                minimumDistance=smooth_mindistance,
+                maxAngle=smooth_maxangle
+            )
+
+        feature.setGeometry(s)
+
+        del geom
 
         # add attribute fields to feature
 
         fields = layer.fields()
-        f.initAttributes(fields.count())
+        feature.initAttributes(fields.count())
         record_values = [self.beePen_QWidget.pencil_width,
                          self.beePen_QWidget.color_name,
                          note]
         for ndx, value in enumerate(record_values):
-            f.setAttribute(ndx, value)
-        layer.addFeature(f)
+            feature.setAttribute(ndx, value)
+
+        layer.addFeature(feature)
+
         layer.commitChanges()
 
     def deleteFeatures(self, geom):

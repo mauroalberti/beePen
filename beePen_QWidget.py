@@ -136,7 +136,7 @@ class beePen_QWidget(QWidget):
 
         pen_layout.addWidget(self.pencolor_QgsColorButtonV2)
 
-        line_advanced_QPushButton = QPushButton("Advanced parameters")
+        line_advanced_QPushButton = QPushButton("Smooth parameters")
         line_advanced_QPushButton.clicked.connect(self.open_advanced_form)
         pen_layout.addWidget(line_advanced_QPushButton)
 

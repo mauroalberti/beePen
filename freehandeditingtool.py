@@ -264,6 +264,7 @@ class EraserTool(QgsMapToolEmitPoint):
             geom = None
 
         # reset rubberband and refresh the canvas
+
         self.rb.reset()
         self.rb = None
         self.canvas.refresh()
