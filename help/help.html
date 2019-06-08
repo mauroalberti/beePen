@@ -41,16 +41,37 @@
 		  <p><img src="ims/beepen_window.png">
 		  <figcaption>Fig. 2</figcaption>
 		</figure>
+		The created line can be automatically simplified and smoothed by setting the parameters in the window (Fig. 3),
+		activated by pressing the "smooth parameters" button in the main plugin window (cf. Fig. 2).
+		The simplify tolerance parameter, a distance value in the same unit as the project CRS, regulates which points are
+		collapsed into a single vertex: ".. points are removed if the distance with the tentative simplified line is smaller than the tolerance"
+		(from <a href="https://gis.stackexchange.com/questions/148585/what-is-simplify-tolerance-in-qgiss-simplify-geometries-tool">
+		What is "Simplify tolerance" in QGIS's Simplify geometries tool?</a>).
+		The smoothing is based on the Chaikin algorithm. The parameters are the same as the equivalent QGIS smooth function
+		(<a href="https://qgis.org/pyqgis/master/core/QgsGeometry.html?highlight=smooth#qgis.core.QgsGeometry.smooth">smooth method</a>):
+		<ul>
+			<li><p><strong>iterations</strong> - number of smoothing iterations to run. More iterations results
+			in a smoother geometry</p></li>
+			<li><p><strong>offset</strong> - fraction of line to create new vertices along, between 0 and 1.0,
+			e.g., the default value of 0.25 will create new vertices 25% and 75% along each line segment
+			of the geometry for each iteration. Smaller values result in “tighter” smoothing.</p></li>
+			<li><p><strong>minimumDistance</strong> - minimum segment length to apply smoothing to</p></li>
+			<li><p><strong>maxAngle</strong> - maximum angle at node (0-180) at which smoothing will be applied</p></li>
+		</ul>
+		<figure>
+		  <p><img src="ims/smoothing_window.png">
+		  <figcaption>Fig. 3</figcaption>
+		</figure>
 		To draw annotations, create a new annotation layer from the beePen window (see Fig. 2) or load an existing one with QGIS (and style it if necessary
-		with the "Style selected layers" command), and then draw annotations by selecting the pen tool (command with pencil icon in Fig. 3).
-		You can delete one or more annotations by drawing a line above them with the eraser tool (rightmost command in Fig. 3).<br />
+		with the "Style selected layers" command), and then draw annotations by selecting the pen tool (command with pencil icon in Fig. 4).
+		You can delete one or more annotations by drawing a line above them with the eraser tool (rightmost command in Fig. 4).<br />
 		<figure>
 		  <p><img src="ims/beepen_commands.png">
-		  <figcaption>Fig. 3</figcaption>
+		  <figcaption>Fig. 4</figcaption>
 		</figure>
 	</div>
 	<br /><br />
-	<div style="font-style: italic; font-size:80%">Text version: August 28, 2018, by Mauro Alberti</div>
+	<div style="font-style: italic; font-size:80%">Text version: June 8, 2019, by Mauro Alberti</div>
 
 
 	
