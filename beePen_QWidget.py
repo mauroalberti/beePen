@@ -206,7 +206,7 @@ class beePen_QWidget(QWidget):
 
         hasOTFP, project_crs = get_on_the_fly_projection(self.canvas)
         if hasOTFP:
-            return str(project_crs.toProj4())
+            return str(project_crs.toProj())
         else:
             return ''
 

@@ -131,7 +131,11 @@ class FreehandEditingTool(QgsMapToolEmitPoint):
         self.rubberband = None
         self.canvas.refresh()
 
-        self.rbFinished.emit(geom)
+        try:
+            self.rbFinished.emit(geom)
+        except:
+            pass
+
 
     def setIgnoreClick(self, ignore):
         """Used to keep the tool from registering clicks during modal dialogs"""
@@ -269,7 +273,10 @@ class EraserTool(QgsMapToolEmitPoint):
         self.rb = None
         self.canvas.refresh()
 
-        self.rbFinished.emit(geom)
+        try:
+            self.rbFinished.emit(geom)
+        except:
+            pass
 
     def setIgnoreClick(self, ignore):
         """Used to keep the tool from registering clicks during modal dialogs"""
