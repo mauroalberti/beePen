@@ -1,15 +1,10 @@
-# -*- coding: utf-8 -*-
 
 # adapted from Freehandediting plugin
 # by Pavol Kapusta
 
 
-from __future__ import absolute_import
-from builtins import map
-
 from qgis.PyQt.QtCore import *
 from qgis.PyQt.QtGui import *
-from qgis.PyQt.QtWidgets import *
 
 from qgis.core import *
 from qgis.gui import *

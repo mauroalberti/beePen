@@ -2,13 +2,13 @@
 name=beePen
 author=Mauro Alberti, Mauro DeDonatis
 email=mauro.dedonatis@uniurb.it
-qgisMinimumVersion=3.0
+qgisMinimumVersion=3.10.3
 description=Allows to draw freehand lines in a layer
 about=Plugin for drawing freehand lines with map-specified pen widths.
   Its applications are for field mapping. 
   It is based on the "Freehand" plugin.
 category=Vector 
-version=0.2.3
+version=0.2.4
 homepage=https://github.com/mauroalberti/beePen
 tracker=https://github.com/mauroalberti/beePen/issues
 repository=https://github.com/mauroalberti/beePen
@@ -19,6 +19,7 @@ icon=./icons/icon.png
 
 ; start of optional metadata
 changelog=
+    0.2.4 : - updated style of import of gdal-related modules
     0.2.3 : - removed two minor bugs related to null geometries emitted, using try .. except
             - fixed deprecation warning related to QgsCoordinateReferenceSystem.toProj4() method -> toProj()
     0.2.2 : - added smooth and simplify parameters for lines

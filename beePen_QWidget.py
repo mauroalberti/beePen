@@ -1,10 +1,10 @@
-from __future__ import absolute_import
 
-
-from builtins import map
-from builtins import str
 import os
-from osgeo import ogr
+
+try:
+    from osgeo import ogr
+except ImportError:
+    import ogr
 
 from qgis.PyQt.QtCore import *
 from qgis.PyQt.QtGui import *

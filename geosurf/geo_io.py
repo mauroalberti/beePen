@@ -10,7 +10,16 @@ from builtins import object
 import json
 import numpy as np
 import os
-from osgeo import ogr, osr
+
+try:
+    from osgeo import ogr
+except ImportError:
+    import ogr
+
+try:
+    from osgeo import osr
+except ImportError:
+    import osr
 
 from .errors import RasterParametersException, OGRIOException, AnaliticSurfaceIOException
 from .spatial import CartesianPoint3DT
