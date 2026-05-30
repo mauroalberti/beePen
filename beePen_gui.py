@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+
 #-----------------------------------------------------------
 #
 #
@@ -29,6 +29,8 @@ from __future__ import absolute_import
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 #---------------------------------------------------------------------
+
+from __future__ import absolute_import
 
 from builtins import object
 import os
@@ -115,8 +117,8 @@ class beePen_gui(object):
             return
 
         beePen_DockWidget = QDockWidget(self.plugin_name, self.interface.mainWindow())
-        beePen_DockWidget.setAttribute(Qt.WA_DeleteOnClose)
-        beePen_DockWidget.setAllowedAreas(Qt.BottomDockWidgetArea | Qt.TopDockWidgetArea)
+        beePen_DockWidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        beePen_DockWidget.setAllowedAreas(Qt.DockWidgetArea.BottomDockWidgetArea | Qt.DockWidgetArea.TopDockWidgetArea)
 
         self.beePen_QWidget = beePen_QWidget(
             self.interface,
@@ -128,7 +130,7 @@ class beePen_gui(object):
         
         beePen_DockWidget.setWidget(self.beePen_QWidget)
         beePen_DockWidget.destroyed.connect(self.closeEvent)        
-        self.interface.addDockWidget(Qt.BottomDockWidgetArea, beePen_DockWidget)
+        self.interface.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, beePen_DockWidget)
 
         self.isbeePenOpen = True
 
@@ -198,7 +200,7 @@ class beePen_gui(object):
         note = ''
         if self.beePen_QWidget.note_QCheckBox.isChecked():
             noteDialog = NoteDialog()
-            if noteDialog.exec_():
+            if noteDialog.exec():
                 note = noteDialog.note_plainTextEdit.toPlainText()
 
         layer.startEditing()

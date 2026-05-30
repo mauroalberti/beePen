@@ -114,7 +114,7 @@ class beePen_QWidget(QWidget):
         self.pen_width_QComboBox = QComboBox()  
         self.pen_width_QComboBox.insertItems(0, [str(width) for width in self.pen_widths])
         self.pen_width_QComboBox.setCurrentIndex(self.pen_width_QComboBox.findText(str(self.pencil_width)))
-        self.pen_width_QComboBox.currentIndexChanged['QString'].connect(self.get_current_pencil_width_choice)         
+        self.pen_width_QComboBox.currentTextChanged.connect(self.get_current_pencil_width_choice)
         pen_layout.addWidget(self.pen_width_QComboBox)
 
         # transparency
@@ -123,7 +123,7 @@ class beePen_QWidget(QWidget):
         self.transparency_QComboBox = QComboBox() 
         self.pen_transparencies_percent = [str(val)+"%" for val in self.pen_transparencies]
         self.transparency_QComboBox.insertItems(0, self.pen_transparencies_percent) 
-        self.transparency_QComboBox.currentIndexChanged['QString'].connect(self.update_color_transparency)
+        self.transparency_QComboBox.currentTextChanged.connect(self.update_color_transparency)
         pen_layout.addWidget(self.transparency_QComboBox)
         
         # pen color
@@ -132,7 +132,7 @@ class beePen_QWidget(QWidget):
         red, green, blue, alpha = list(map(int, self.color_name.split(",")))
         self.pencolor_QgsColorButtonV2 = QgsColorButton()
         self.pencolor_QgsColorButtonV2.setColor(QColor(red, green, blue, alpha))
-        self.pencolor_QgsColorButtonV2.colorChanged['QColor'].connect(self.update_color_transparency)
+        self.pencolor_QgsColorButtonV2.colorChanged.connect(self.update_color_transparency)
 
         pen_layout.addWidget(self.pencolor_QgsColorButtonV2)
 
