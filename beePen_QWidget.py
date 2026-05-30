@@ -251,7 +251,12 @@ class beePen_QWidget(QWidget):
 
         for layer in selected_layers:
             if isAnnotationLayer(layer):
-                layer.loadNamedStyle(os.path.join(self.plugin_dirpth, "beePen_style.qml"))
+                layer.loadNamedStyle(
+                    os.path.join(
+                        self.plugin_dirpth,
+                        "beePen_style.qml"
+                    )
+                )
             else:
                 self.warn('Layer %s is not an annotation layer' % layer.name())
 

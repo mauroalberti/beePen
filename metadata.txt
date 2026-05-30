@@ -9,7 +9,7 @@ about=Plugin for drawing freehand lines with map-specified pen widths.
   Its applications are for field mapping. 
   It is based on the "Freehand" plugin.
 category=Vector 
-version=0.2.5
+version=0.2.6
 homepage=https://github.com/mauroalberti/beePen
 tracker=https://github.com/mauroalberti/beePen/issues
 repository=https://github.com/mauroalberti/beePen
@@ -20,7 +20,8 @@ icon=./icons/icon.png
 
 ; start of optional metadata
 changelog=
-    0.2.5 : - removed use of eval, for security reasons
+    0.2.6 [20250530] : - removed use of eval, for security reasons
+    0.2.5 [20240608]: - fixed bug related to using a float for the RubberBand setWidth method
     0.2.4 : - updated style of import of gdal-related modules
     0.2.3 : - removed two minor bugs related to null geometries emitted, using try .. except
             - fixed deprecation warning related to QgsCoordinateReferenceSystem.toProj4() method -> toProj()

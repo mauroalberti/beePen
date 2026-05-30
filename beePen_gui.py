@@ -95,9 +95,11 @@ class beePen_gui(object):
         self.canvas.mapToolSet.connect(self.deactivate_pencil)
 
         self.beePen_rubber_QAction = QAction(
-            QIcon(":/plugins/%s/icons/rubber.png" % self.plugin_name),
+            QIcon(f":/plugins/{self.plugin_name}/icons/rubber.png"),
             "beeRubber",
-            self.interface.mainWindow())
+            self.interface.mainWindow()
+        )
+
         self.beePen_rubber_QAction.setWhatsThis("Rubber for graphic annotations") 
         self.beePen_rubber_QAction.setToolTip("Rubber tool for %s" % self.plugin_name)
         self.beePen_rubber_QAction.triggered.connect(self.erase_features)
@@ -143,7 +145,8 @@ class beePen_gui(object):
         if not self.isbeePenOpen:
             warn(self.interface.mainWindow(),
                  self.plugin_name,
-                 "First launch %s" % self.plugin_name)
+                 f"Launch {self.plugin_name} first"
+            )
             return
 
         self.pencil_tool = FreehandEditingTool(
@@ -152,6 +155,7 @@ class beePen_gui(object):
             self.beePen_QWidget.color_name,
             self.beePen_QWidget.pencil_width
         )
+
         self.beePen_QWidget.style_signal.connect(self.pencil_tool.update_pen_style)
         self.canvas.setMapTool(self.pencil_tool)
         self.beePen_pencil_QAction.setChecked(True)
@@ -186,7 +190,7 @@ class beePen_gui(object):
             del geom
             warn(self.interface.mainWindow(),
                  self.plugin_name,
-                 "The current active layer is not an annotation layer")
+                 "The current active layer is not a valid annotation layer")
             return
 
         # open note window for inputting the note text
@@ -220,11 +224,36 @@ class beePen_gui(object):
         # simplification and smoothing section
 
         settings = QSettings()
-        simplify_tolerance=settings.value("/%s/simplify_tolerance" % self.plugin_name, 0.0, type=float)
-        smooth_iterations=settings.value("/%s/smooth_iterations" % self.plugin_name, 0, type=int)
-        smooth_offset=settings.value("/%s/smooth_offset" % self.plugin_name, 0.25, type=float)
-        smooth_mindistance=settings.value("/%s/smooth_mindistance" % self.plugin_name, -1.0, type=float)
-        smooth_maxangle=settings.value("/%s/smooth_maxangle" % self.plugin_name, 180.0, type=float)
+
+        simplify_tolerance = settings.value(
+            f"/{self.plugin_name}/simplify_tolerance",
+            0.0,
+            type=float
+        )
+
+        smooth_iterations = settings.value(
+            f"/{self.plugin_name}/smooth_iterations",
+            0,
+            type=int
+        )
+
+        smooth_offset = settings.value(
+            f"/{self.plugin_name}/smooth_offset",
+            0.25,
+            type=float
+        )
+
+        smooth_mindistance = settings.value(
+            f"/{self.plugin_name}/smooth_mindistance",
+            -1.0,
+            type=float
+        )
+
+        smooth_maxangle = settings.value(
+            f"/{self.plugin_name}/smooth_maxangle",
+            180.0,
+            type=float
+        )
 
         # let the feature unchanged when CRS is in polar coordinates
 
@@ -253,9 +282,13 @@ class beePen_gui(object):
 
         fields = layer.fields()
         feature.initAttributes(fields.count())
-        record_values = [self.beePen_QWidget.pencil_width,
-                         self.beePen_QWidget.color_name,
-                         note]
+
+        record_values = [
+            self.beePen_QWidget.pencil_width,
+            self.beePen_QWidget.color_name,
+            note
+        ]
+
         for ndx, value in enumerate(record_values):
             feature.setAttribute(ndx, value)
 

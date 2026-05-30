@@ -61,7 +61,11 @@ class FreehandEditingTool(QgsMapToolEmitPoint):
         elif name == "width":
             self.pencil_width = float(parameter)
         else:
-            warn(self.interface.mainWindow(), self.plugin_name, "Error with pen style update")
+            warn(
+                self.interface.mainWindow(),
+                self.plugin_name,
+                "Error with pen style update"
+            )
 
     def keyPressEvent(self, event):
         
@@ -93,7 +97,9 @@ class FreehandEditingTool(QgsMapToolEmitPoint):
 
         red, green, blue, alpha = list(map(int, self.color_name.split(",")))
         self.rubberband.setColor(QColor(red, green, blue, alpha))
-        self.rubberband.setWidth(self.pencil_width * FreehandEditingTool.rubberband_conv_factor / self.canvas.scale()) # denominator is empirically-derived value
+
+        # denominator value is an empirically-derived value
+        self.rubberband.setWidth(int(round(self.pencil_width * FreehandEditingTool.rubberband_conv_factor / self.canvas.scale())))
 
         point = self.toLayerCoordinates(layer, event.pos())
         pointMap = self.toMapCoordinates(layer, point)
