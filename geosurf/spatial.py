@@ -12,7 +12,7 @@ import numpy as np
 import copy
 from .qgs_tools import project_qgs_point, qgs_point_2d
 from .utils import array_from_function, almost_zero
-from .array_utils import point_solution, formula_to_grid
+from .array_utils import point_solution
 from .errors import AnaliticSurfaceIOException, AnaliticSurfaceCalcException
 from functools import reduce
 
@@ -1958,117 +1958,6 @@ class CartesianTriangle(object):
             return False
         else:
             return True
-
-
-class AnalyticGeosurface(object):
-    def __init__(self, analytical_params, geogr_params, deform_params):
-
-        self.analytical_params = analytical_params
-        self.geographical_params = geogr_params
-        self.deformational_params = deform_params
-
-        # extract array params
-        self.anal_param_values = self.get_analytical_param_values()
-        array_range, array_size, formula = self.anal_param_values
-        a_min, a_max, b_min, b_max = array_range
-        a_range, b_range = a_max - a_min, b_max - b_min
-
-        # calculate array from formula    
-        try:
-            self.X, self.Y, self.Z = formula_to_grid(array_range, array_size, formula)
-        except AnaliticSurfaceCalcException as msg:
-            raise AnaliticSurfaceCalcException(msg)
-
-        # calculate geographic transformations to surface
-        self.geographical_values = self.get_geographical_param_values()
-        (geog_x_min, geog_y_min), (area_height, area_width), area_rot_ang_deg = self.geographical_values
-        geog_scale_matr = geographic_scale_matrix(a_range, b_range, area_height, area_width)
-        geogr_rot_matrix = geographic_rotation_matrix(area_rot_ang_deg)
-
-        self.geographic_transformation_matrix = np.dot(geogr_rot_matrix, geog_scale_matr)
-
-        self.geographic_offset_matrix = geographic_offset(self.geographic_transformation_matrix,
-                                                          np.array([a_min, b_min, 0.0]),
-                                                          np.array([geog_x_min, geog_y_min, 0.0]))
-
-        # apply total transformations to grid points 
-        self.deformations = deformation_matrices(self.deformational_params)
-
-    def geosurface_center(self):
-
-        array_range, _, _ = self.anal_param_values
-        a_min, a_max, b_min, b_max = array_range
-
-        x = (a_min + a_max) / 2.0
-        y = (b_min + b_max) / 2.0
-        z = (min(self.Z) + max(self.Z)) / 2.0
-
-        return self.transform_loc(x, y, z)
-
-    def geosurface_XYZ(self):
-
-        geosurface_X = []
-        geosurface_Y = []
-        geosurface_Z = []
-
-        for x, y, z in zip(self.X, self.Y, self.Z):
-            pt = self.transform_loc(x, y, z)
-            geosurface_X.append(pt[0])
-            geosurface_Y.append(pt[1])
-            geosurface_Z.append(pt[2])
-
-        return geosurface_X, geosurface_Y, geosurface_Z
-
-    def get_analytical_param_values(self):
-
-        try:
-            a_min = float(self.analytical_params['a min'])
-            a_max = float(self.analytical_params['a max'])
-            grid_cols = int(self.analytical_params['grid cols'])
-
-            b_min = float(self.analytical_params['b min'])
-            b_max = float(self.analytical_params['b max'])
-            grid_rows = int(self.analytical_params['grid rows'])
-
-            formula = str(self.analytical_params['formula'])
-        except:
-            raise AnaliticSurfaceIOException("Analytical value error")
-
-        if a_min >= a_max or b_min >= b_max:
-            raise AnaliticSurfaceIOException("Input a and b value error")
-
-        if grid_cols <= 0 or grid_rows <= 0:
-            raise AnaliticSurfaceIOException("Grid column/row value error")
-
-        if formula == '':
-            raise AnaliticSurfaceIOException("Input analytical formula error")
-
-        return (a_min, a_max, b_min, b_max), (grid_rows, grid_cols), formula
-
-    def get_geographical_param_values(self):
-
-        try:
-            geog_x_min = float(self.geographical_params['geog x min'])
-            geog_y_min = float(self.geographical_params['geog y min'])
-            grid_height = float(self.geographical_params['grid height'])
-            grid_width = float(self.geographical_params['grid width'])
-            grid_rot_angle_degr = float(self.geographical_params['grid rot angle degr'])
-        except:
-            raise AnaliticSurfaceIOException("Input geographic value error")
-
-        return (geog_x_min, geog_y_min), (grid_height, grid_width), grid_rot_angle_degr
-
-    def transform_loc(self, x, y, z):
-
-        pt = np.dot(self.geographic_transformation_matrix, np.array([x, y, z])) + self.geographic_offset_matrix
-        for deformation in self.deformations:
-            if deformation['increment'] == 'additive':
-                pt = pt + deformation['matrix']
-            elif deformation['increment'] == 'multiplicative':
-                pt = pt - deformation['shift_pt']
-                pt = np.dot(deformation['matrix'], pt)
-                pt = pt + deformation['shift_pt']
-        return pt
 
 
 def geographic_scale_matrix(a_range, b_range, grid_height, grid_width):
